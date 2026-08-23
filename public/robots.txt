@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /login
+Disallow: /search
+
+Sitemap: https://alaseelnews.com/sitemap.xml

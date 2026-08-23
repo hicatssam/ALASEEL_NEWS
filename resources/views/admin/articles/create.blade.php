@@ -1,0 +1,1577 @@
+@extends('layouts.admin')
+
+@php
+    $isGenericCreate = !request()->filled('content_type');
+    $createTypeLabel = $isGenericCreate ? 'محتوى جديد' : ($contentTypes[$selectedContentType] ?? 'خبر');
+@endphp
+
+@section('title', $isGenericCreate ? 'إضافة محتوى جديد' : 'إضافة '.$createTypeLabel)
+
+@section('breadcrumb')
+    <a href="{{ route('admin.articles.index') }}">
+        {{ __('admin.nav_articles') }}
+    </a>
+
+    <span class="sep">›</span>
+
+    {{ $isGenericCreate ? 'إضافة محتوى جديد' : 'إضافة '.$createTypeLabel }}
+@endsection
+
+@section('content')
+
+@if ($errors->any())
+    <div class="alert alert-danger" style="margin-bottom:16px">
+        <strong>يرجى تصحيح الأخطاء التالية:</strong>
+
+        <ul style="margin:10px 0 0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+@php
+    $selectedTags = array_map(
+        'strval',
+        old('tags', [])
+    );
+
+    $selectedMediaId = old('main_image_media_id');
+    $oldImageUrl = old('main_image_url');
+@endphp
+
+<form
+    method="POST"
+    action="{{ route('admin.articles.store') }}"
+    enctype="multipart/form-data"
+    id="article-create-form"
+>
+    @csrf
+
+    <div
+        class="article-form-grid"
+        style="
+            display:grid;
+            grid-template-columns:minmax(0, 1fr) 300px;
+            gap:20px;
+            align-items:start;
+        "
+    >
+        <div>
+            {{-- محتوى المقال --}}
+            <div class="card" style="margin-bottom:16px">
+                <div class="card-header">
+                    <span class="card-title">
+                        {{ __('admin.label_article_content') }}
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">نوع المحتوى <span style="color:#e74c3c">*</span></label>
+                        <select name="content_type" class="form-control @error('content_type') is-invalid @enderror" required>
+                            @foreach($contentTypes as $value => $label)
+                                <option value="{{ $value }}" @selected(old('content_type', $selectedContentType) === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        @error('content_type')<small class="field-error">{{ $message }}</small>@enderror
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ __('admin.label_main_title') }}
+
+                            <span style="color:#e74c3c">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            name="title"
+                            class="form-control @error('title') is-invalid @enderror"
+                            value="{{ old('title') }}"
+                            
+                            maxlength="500"
+                            style="font-size:16px;font-weight:700"
+                        >
+
+                        @error('title')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ __('admin.label_summary') }}
+                        </label>
+
+                        <textarea
+                            name="summary"
+                            class="form-control @error('summary') is-invalid @enderror"
+                            rows="3"
+                        >{{ old('summary') }}</textarea>
+
+                        @error('summary')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <div class="form-group" id="content-editor-container" style="margin-bottom:0">
+                        <label class="form-label" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+                            <span>
+                                {{ __('admin.label_full_content') }}
+                                <span style="color:#e74c3c">*</span>
+                            </span>
+
+                            <span style="display:flex;gap:8px;flex-wrap:wrap">
+                                <button
+                                    type="button"
+                                    id="insert-inline-image"
+                                    class="btn btn-outline"
+                                    style="padding:4px 10px;font-size:12px"
+                                >
+                                    <i class="fa-solid fa-image"></i>
+                                    إدراج صورة من المكتبة داخل النص
+                                </button>
+
+                                <button
+                                    type="button"
+                                    id="toggle-fullscreen-editor"
+                                    class="btn btn-outline"
+                                    style="padding:4px 10px;font-size:12px"
+                                >
+                                    <i class="fa-solid fa-expand"></i>
+                                    وضع الشاشة الكاملة
+                                </button>
+                            </span>
+                        </label>
+
+                        <textarea
+                            name="content"
+                            id="content-editor"
+                            class="form-control @error('content') is-invalid @enderror"
+                            rows="18"
+                            
+                        >{{ old('content') }}</textarea>
+
+                        @error('content')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            {{-- تحسين محركات البحث --}}
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">
+                        {{ __('admin.label_seo_section') }}
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ __('admin.label_seo_title') }}
+                        </label>
+
+                        <input
+                            type="text"
+                            name="seo_title"
+                            class="form-control @error('seo_title') is-invalid @enderror"
+                            value="{{ old('seo_title') }}"
+                            maxlength="255"
+                        >
+
+                        @error('seo_title')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ __('admin.label_seo_description') }}
+                        </label>
+
+                        <textarea
+                            name="seo_description"
+                            class="form-control @error('seo_description') is-invalid @enderror"
+                            rows="3"
+                        >{{ old('seo_description') }}</textarea>
+
+                        @error('seo_description')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="form-label">
+                            {{ __('admin.label_meta_keywords') }}
+                        </label>
+
+                        <input
+                            type="text"
+                            name="meta_keywords"
+                            class="form-control @error('meta_keywords') is-invalid @enderror"
+                            value="{{ old('meta_keywords') }}"
+                        >
+
+                        @error('meta_keywords')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            {{-- النشر --}}
+            <div class="card" style="margin-bottom:16px">
+                <div class="card-header">
+                    <span class="card-title">
+                        {{ __('admin.label_publish_short') }}
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ __('admin.label_status') }}
+                        </label>
+
+                        <select
+                            name="status"
+                            id="article-status"
+                            class="form-control @error('status') is-invalid @enderror"
+                           
+                        >
+                            @foreach ([
+                                'draft' => __('admin.status_draft'),
+                                'under_review' => __('admin.status_review'),
+                                'approved' => __('admin.status_approved'),
+                                'published' => __('admin.status_published'),
+                                'scheduled' => __('admin.status_scheduled'),
+                                'archived' => __('admin.status_archived'),
+                                'rejected' => __('admin.status_rejected'),
+                            ] as $value => $label)
+                                <option
+                                    value="{{ $value }}"
+                                    @selected(old('status', 'draft') === $value)
+                                >
+                                    {{ $label }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        @error('status')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <div
+                        class="form-group"
+                        id="scheduled-at-wrapper"
+                    >
+                        <label class="form-label">
+                            {{ __('admin.label_schedule_date') }}
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            name="scheduled_at"
+                            class="form-control @error('scheduled_at') is-invalid @enderror"
+                            value="{{ old('scheduled_at') }}"
+                        >
+
+                        @error('scheduled_at')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;gap:10px">
+                        <label class="form-check">
+                            <input
+                                type="checkbox"
+                                name="is_breaking"
+                                value="1"
+                                @checked(old('is_breaking'))
+                            >
+
+                            {{ __('admin.label_breaking_news') }}
+                        </label>
+
+                        <label class="form-check">
+                            <input
+                                type="checkbox"
+                                name="is_featured"
+                                value="1"
+                                @checked(old('is_featured'))
+                            >
+
+                            {{ __('admin.label_featured_item') }}
+                        </label>
+
+                        <label class="form-check">
+                            <input
+                                type="checkbox"
+                                name="is_editor_pick"
+                                value="1"
+                                @checked(old('is_editor_pick'))
+                            >
+
+                            {{ __('admin.label_editor_pick_item') }}
+                        </label>
+
+                        <label class="form-check" title="إظهار الخبر في Google وخرائط الموقع">
+                            <input type="checkbox" name="is_indexable" value="1" @checked(old('is_indexable', true))>
+                            <i class="fa-brands fa-google" style="color:#4285f4"></i>
+                            السماح بفهرسة هذا المحتوى
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            {{-- القسم والصحفي --}}
+            <div class="card" style="margin-bottom:16px">
+                <div class="card-header">
+                    <span class="card-title">
+                        {{ __('admin.label_category_journalist') }}
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ __('admin.label_category') }}
+                        </label>
+
+                        <select
+                            name="category_id"
+                            class="form-control @error('category_id') is-invalid @enderror"
+                        >
+                            <option value="">
+                                {{ __('admin.opt_no_category') }}
+                            </option>
+
+                            @foreach ($categories as $category)
+                                <option
+                                    value="{{ $category->id }}"
+                                    @selected(
+                                        (string) old('category_id') ===
+                                        (string) $category->id
+                                    )
+                                >
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        @error('category_id')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:0">
+                        <label class="form-label">
+                            {{ __('admin.label_journalist') }}
+                        </label>
+
+                        <select
+                            name="journalist_id"
+                            class="form-control @error('journalist_id') is-invalid @enderror"
+                        >
+                            <option value="">
+                                {{ __('admin.opt_no_journalist') }}
+                            </option>
+
+                            @foreach ($journalists as $journalist)
+                                <option
+                                    value="{{ $journalist->id }}"
+                                    @selected(
+                                        (string) old('journalist_id') ===
+                                        (string) $journalist->id
+                                    )
+                                >
+                                    {{ $journalist->name }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        @error('journalist_id')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            {{-- الصورة الرئيسية --}}
+            <div class="card" style="margin-bottom:16px">
+                <div class="card-header">
+                    <span class="card-title">
+                        {{ __('admin.label_main_image_section') }}
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <input
+                        type="hidden"
+                        name="main_image_media_id"
+                        id="main-image-media-id"
+                        value="{{ $selectedMediaId }}"
+                    >
+
+                    <input
+                        type="hidden"
+                        name="remove_main_image"
+                        id="remove-main-image"
+                        value="0"
+                    >
+
+                    <div
+                        id="main-image-preview-wrapper"
+                        style="{{ $oldImageUrl ? '' : 'display:none;' }}margin-bottom:12px"
+                    >
+                        <img
+                            id="main-image-preview"
+                            src="{{ $oldImageUrl }}"
+                            alt="معاينة الصورة الرئيسية"
+                            style="
+                                width:100%;
+                                height:170px;
+                                object-fit:cover;
+                                border-radius:8px;
+                                border:1px solid #dee2e6;
+                            "
+                        >
+
+                        <div
+                            id="selected-image-name"
+                            style="font-size:12px;color:#777;margin-top:6px"
+                        >
+                            {{ $oldImageUrl ? 'رابط خارجي' : '' }}
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="open-media-picker"
+                        class="btn btn-outline"
+                        style="width:100%;margin-bottom:10px"
+                    >
+                        <i class="fa-solid fa-images"></i>
+
+                        اختيار من مكتبة الوسائط
+                    </button>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            رفع صورة جديدة
+                        </label>
+
+                        <input
+                            type="file"
+                            name="main_image_file"
+                            id="main-image-file"
+                            class="form-control @error('main_image_file') is-invalid @enderror"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                        >
+
+                        <small style="display:block;color:#888;margin-top:5px">
+                            JPG، PNG، WEBP أو GIF — الحد الأقصى 5MB.
+                        </small>
+
+                        @error('main_image_file')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <div class="image-divider">
+                        <span></span>
+                        <small>أو</small>
+                        <span></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            رابط صورة خارجي
+                        </label>
+
+                        <input
+                            type="url"
+                            name="main_image_url"
+                            id="main-image-url"
+                            class="form-control @error('main_image_url') is-invalid @enderror"
+                            value="{{ old('main_image_url') }}"
+                            placeholder="https://example.com/image.jpg"
+                        >
+
+                        @error('main_image_url')
+                            <small class="field-error">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <button
+                        type="button"
+                        id="remove-main-image-button"
+                        class="btn btn-outline"
+                        style="width:100%;color:#dc3545"
+                    >
+                        <i class="fa-solid fa-trash"></i>
+
+                        إزالة الصورة الرئيسية
+                    </button>
+
+                    @error('main_image_media_id')
+                        <small class="field-error">
+                            {{ $message }}
+                        </small>
+                    @enderror
+                </div>
+            </div>
+
+            {{-- الوسوم --}}
+            <div class="card" style="margin-bottom:16px">
+                <div class="card-header">
+                    <span class="card-title">
+                        {{ __('admin.label_tags') }}
+                    </span>
+                </div>
+
+                <div class="card-body">
+                    <div style="display:flex;flex-wrap:wrap;gap:6px">
+                        @forelse ($tags as $tag)
+                            <label class="tag-option">
+                                <input
+                                    type="checkbox"
+                                    name="tags[]"
+                                    value="{{ $tag->id }}"
+                                    @checked(
+                                        in_array(
+                                            (string) $tag->id,
+                                            $selectedTags,
+                                            true
+                                        )
+                                    )
+                                >
+
+                                {{ $tag->name }}
+                            </label>
+                        @empty
+                            <span style="font-size:13px;color:#888">
+                                لا توجد وسوم متاحة.
+                            </span>
+                        @endforelse
+                    </div>
+
+                    <div style="margin-top:14px">
+                        <label for="new-tags" class="form-label">
+                            إضافة وسوم جديدة
+                        </label>
+                        <input
+                            type="text"
+                            id="new-tags"
+                            name="new_tags"
+                            class="form-control @error('new_tags') is-invalid @enderror"
+                            value="{{ old('new_tags') }}"
+                            placeholder="مثال: تحقيقات خاصة، غزة، اقتصاد رقمي"
+                        >
+                        <small style="display:block;margin-top:6px;color:#888;line-height:1.6">
+                            اكتب وسمًا واحدًا أو عدة وسوم وافصل بينها بفاصلة، وسيتم إنشاؤها واختيارها تلقائيًا.
+                        </small>
+                    </div>
+
+                    @error('new_tags')
+                        <small class="field-error">{{ $message }}</small>
+                    @enderror
+
+                    @error('tags')
+                        <small class="field-error">
+                            {{ $message }}
+                        </small>
+                    @enderror
+
+                    @error('tags.*')
+                        <small class="field-error">
+                            {{ $message }}
+                        </small>
+                    @enderror
+                </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-save"></i>
+
+                    {{ $isGenericCreate ? 'حفظ المحتوى' : 'حفظ '.$createTypeLabel }}
+                </button>
+
+                <a
+                    href="{{ route('admin.articles.index') }}"
+                    class="btn btn-outline"
+                >
+                    {{ __('admin.btn_cancel') }}
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+{{-- نافذة مكتبة الوسائط --}}
+<div
+    id="media-picker-modal"
+    class="media-modal"
+    aria-hidden="true"
+>
+    <div class="media-modal-dialog">
+        <div class="media-modal-header">
+            <div>
+                <h3>اختيار صورة من مكتبة الوسائط</h3>
+
+                <small>
+                    اختر صورة محفوظة لاستخدامها في المقال.
+                </small>
+            </div>
+
+            <button
+                type="button"
+                id="close-media-picker"
+                class="media-modal-close"
+                aria-label="إغلاق"
+            >
+                ×
+            </button>
+        </div>
+
+        <div class="media-modal-toolbar">
+            <input
+                type="search"
+                id="media-search"
+                class="form-control"
+                placeholder="البحث باسم الصورة..."
+            >
+
+            <button
+                type="button"
+                id="media-search-button"
+                class="btn btn-primary"
+            >
+                <i class="fa-solid fa-search"></i>
+                بحث
+            </button>
+        </div>
+
+        <div
+            id="media-picker-loading"
+            class="media-message"
+        >
+            جاري تحميل الصور...
+        </div>
+
+        <div
+            id="media-picker-empty"
+            class="media-message"
+            style="display:none"
+        >
+            لا توجد صور مطابقة.
+        </div>
+
+        <div
+            id="media-picker-error"
+            class="media-error"
+            style="display:none"
+        >
+            تعذر تحميل مكتبة الوسائط.
+        </div>
+
+        <div
+            id="media-picker-grid"
+            class="media-picker-grid"
+        ></div>
+
+        <div class="media-modal-footer">
+            <button
+                type="button"
+                id="media-previous-page"
+                class="btn btn-outline"
+                disabled
+            >
+                السابق
+            </button>
+
+            <span id="media-page-status">
+                صفحة 1
+            </span>
+
+            <button
+                type="button"
+                id="media-next-page"
+                class="btn btn-outline"
+                disabled
+            >
+                التالي
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media (max-width: 900px) {
+        .article-form-grid {
+            grid-template-columns:1fr !important;
+        }
+    }
+
+    .is-invalid {
+        border-color:#dc3545 !important;
+    }
+
+    .field-error {
+        display:block;
+        color:#dc3545;
+        margin-top:5px;
+    }
+
+    .tag-option {
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        gap:5px;
+        background:#f8f9fa;
+        border:1px solid #dee2e6;
+        padding:5px 8px;
+        border-radius:6px;
+        font-size:12px;
+    }
+
+    .tag-option input {
+        accent-color:#c9a84c;
+    }
+
+    .image-divider {
+        display:flex;
+        align-items:center;
+        gap:8px;
+        margin:12px 0;
+    }
+
+    .image-divider span {
+        height:1px;
+        background:#dee2e6;
+        flex:1;
+    }
+
+    .image-divider small {
+        color:#999;
+    }
+
+    .media-modal {
+        display:none;
+        position:fixed;
+        inset:0;
+        z-index:9999;
+        padding:24px;
+        background:rgba(0, 0, 0, .65);
+        overflow:auto;
+    }
+
+    .media-modal.is-open {
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
+
+    .media-modal-dialog {
+        width:min(100%, 1000px);
+        max-height:90vh;
+        display:flex;
+        flex-direction:column;
+        overflow:hidden;
+        background:#fff;
+        color:#212529;
+        border-radius:12px;
+        box-shadow:0 20px 60px rgba(0, 0, 0, .35);
+    }
+
+    .media-modal-header,
+    .media-modal-toolbar,
+    .media-modal-footer {
+        padding:16px;
+        border-bottom:1px solid #e9ecef;
+    }
+
+    .media-modal-header {
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:16px;
+    }
+
+    .media-modal-header h3 {
+        margin:0 0 5px;
+        font-size:18px;
+    }
+
+    .media-modal-header small {
+        color:#777;
+    }
+
+    .media-modal-close {
+        border:0;
+        background:transparent;
+        cursor:pointer;
+        color:#555;
+        font-size:30px;
+        line-height:1;
+    }
+
+    .media-modal-toolbar {
+        display:flex;
+        gap:10px;
+    }
+
+    .media-modal-toolbar input {
+        flex:1;
+    }
+
+    .media-picker-grid {
+        display:grid;
+        grid-template-columns:repeat(4, minmax(0, 1fr));
+        gap:12px;
+        padding:16px;
+        overflow:auto;
+    }
+
+    .media-item {
+        padding:0;
+        overflow:hidden;
+        text-align:start;
+        cursor:pointer;
+        background:#fff;
+        border:2px solid transparent;
+        border-radius:8px;
+        box-shadow:0 0 0 1px #dee2e6;
+        transition:.15s ease;
+    }
+
+    .media-item:hover {
+        border-color:#c9a84c;
+        transform:translateY(-2px);
+    }
+
+    .media-item img {
+        display:block;
+        width:100%;
+        height:135px;
+        object-fit:cover;
+        background:#f1f3f5;
+    }
+
+    .media-item-name {
+        display:block;
+        padding:8px;
+        overflow:hidden;
+        white-space:nowrap;
+        text-overflow:ellipsis;
+        font-size:12px;
+    }
+
+    .media-message,
+    .media-error {
+        padding:30px;
+        color:#777;
+        text-align:center;
+    }
+
+    .media-error {
+        color:#dc3545;
+    }
+
+    .media-modal-footer {
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:12px;
+        border-top:1px solid #e9ecef;
+        border-bottom:0;
+    }
+
+    @media (max-width: 700px) {
+        .media-picker-grid {
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+        }
+
+        .media-modal-toolbar {
+            flex-direction:column;
+        }
+    }
+
+    /* CKEditor container so it doesn't feel like a bare textarea */
+    .ck-editor__editable {
+        min-height:480px;
+        line-height:1.8;
+    }
+
+    /* Content images must be responsive and never overflow the editor / article area */
+    .ck-content img,
+    .ck-content .image img {
+        max-width:100%;
+        height:auto;
+    }
+
+    .ck-content table {
+        max-width:100%;
+    }
+
+    /* Custom, free (no license required) fullscreen mode for the editor */
+    #content-editor-container.editor-fullscreen {
+        position:fixed;
+        inset:0;
+        z-index:99999;
+        background:#fff;
+        padding:20px;
+        margin:0;
+        overflow:auto;
+    }
+
+    #content-editor-container.editor-fullscreen .ck-editor__editable {
+        min-height:calc(100vh - 170px);
+    }
+
+    body.editor-fullscreen-active {
+        overflow:hidden;
+    }
+</style>
+
+{{-- محرر النصوص الغني (شريط أدوات كامل + إدراج صور داخل المحتوى) — CKEditor 5 (48.4.0) محلي عبر ESM، بدون CDN --}}
+<link rel="stylesheet" href="{{ asset('assets/vendor/ckeditor5-48.4.0/ckeditor5.css') }}">
+
+<script type="module">
+import {
+    Alignment,
+    Autoformat,
+    BlockQuote,
+    Bold,
+    ClassicEditor,
+    Essentials,
+    FontBackgroundColor,
+    FontColor,
+    FontFamily,
+    FontSize,
+    Heading,
+    HorizontalLine,
+    Image,
+    ImageCaption,
+    ImageStyle,
+    ImageTextAlternative,
+    ImageToolbar,
+    ImageUpload,
+    Indent,
+    IndentBlock,
+    Italic,
+    Link,
+    LinkImage,
+    List,
+    Paragraph,
+    PasteFromOffice,
+    RemoveFormat,
+    SimpleUploadAdapter,
+    SourceEditing,
+    Strikethrough,
+    Table,
+    TableToolbar,
+    TextPartLanguage,
+    TextTransformation,
+    Underline
+} from "{{ asset('assets/vendor/ckeditor5-48.4.0/ckeditor5.js') }}";
+
+import translations from "{{ asset('assets/vendor/ckeditor5-48.4.0/translations/ar.js') }}";
+
+document.addEventListener('DOMContentLoaded', function () {
+    const pickerUrl = @json(route('admin.media.picker'));
+    const contentImageUploadUrl = @json(route('admin.articles.upload-content-image'));
+    const csrfToken = document.querySelector(
+        '#article-create-form input[name="_token"]'
+    ).value;
+
+    const statusInput = document.getElementById('article-status');
+    const scheduleWrapper = document.getElementById(
+        'scheduled-at-wrapper'
+    );
+
+    const modal = document.getElementById('media-picker-modal');
+    const openPickerButton = document.getElementById(
+        'open-media-picker'
+    );
+    const insertInlineButton = document.getElementById(
+        'insert-inline-image'
+    );
+    const closePickerButton = document.getElementById(
+        'close-media-picker'
+    );
+
+    const mediaIdInput = document.getElementById(
+        'main-image-media-id'
+    );
+    const removeImageInput = document.getElementById(
+        'remove-main-image'
+    );
+    const fileInput = document.getElementById(
+        'main-image-file'
+    );
+    const urlInput = document.getElementById(
+        'main-image-url'
+    );
+
+    const previewWrapper = document.getElementById(
+        'main-image-preview-wrapper'
+    );
+    const previewImage = document.getElementById(
+        'main-image-preview'
+    );
+    const selectedImageName = document.getElementById(
+        'selected-image-name'
+    );
+    const removeImageButton = document.getElementById(
+        'remove-main-image-button'
+    );
+
+    const searchInput = document.getElementById('media-search');
+    const searchButton = document.getElementById(
+        'media-search-button'
+    );
+    const mediaGrid = document.getElementById(
+        'media-picker-grid'
+    );
+    const loadingMessage = document.getElementById(
+        'media-picker-loading'
+    );
+    const emptyMessage = document.getElementById(
+        'media-picker-empty'
+    );
+    const errorMessage = document.getElementById(
+        'media-picker-error'
+    );
+
+    const previousButton = document.getElementById(
+        'media-previous-page'
+    );
+    const nextButton = document.getElementById(
+        'media-next-page'
+    );
+    const pageStatus = document.getElementById(
+        'media-page-status'
+    );
+
+    const fullscreenButton = document.getElementById(
+        'toggle-fullscreen-editor'
+    );
+    const editorContainer = document.getElementById(
+        'content-editor-container'
+    );
+
+    let currentPage = 1;
+    let lastPage = 1;
+    let objectUrl = null;
+
+    // 'main-image': تحديد الصورة الرئيسية.
+    // 'editor-insert': إدراج الصورة داخل محتوى CKEditor.
+    let mediaPickerMode = 'main-image';
+
+    let articleEditor = null;
+
+    function updateScheduleVisibility() {
+        scheduleWrapper.style.display =
+            statusInput.value === 'scheduled'
+                ? 'block'
+                : 'none';
+    }
+
+    function clearObjectUrl() {
+        if (objectUrl) {
+            URL.revokeObjectURL(objectUrl);
+            objectUrl = null;
+        }
+    }
+
+    function showPreview(source, name = '') {
+        clearObjectUrl();
+
+        if (!source) {
+            previewImage.removeAttribute('src');
+            previewWrapper.style.display = 'none';
+            selectedImageName.textContent = '';
+            return;
+        }
+
+        previewImage.src = source;
+        previewWrapper.style.display = 'block';
+        selectedImageName.textContent = name;
+    }
+
+    function openModal(mode) {
+        mediaPickerMode = mode || 'main-image';
+
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        currentPage = 1;
+        loadMedia();
+    }
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    async function loadMedia() {
+        loadingMessage.style.display = 'block';
+        emptyMessage.style.display = 'none';
+        errorMessage.style.display = 'none';
+
+        mediaGrid.innerHTML = '';
+
+        previousButton.disabled = true;
+        nextButton.disabled = true;
+
+        const params = new URLSearchParams({
+            page: currentPage,
+            search: searchInput.value.trim()
+        });
+
+        try {
+            const response = await fetch(
+                pickerUrl + '?' + params.toString(),
+                {
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Media request failed.');
+            }
+
+            const result = await response.json();
+
+            const media = Array.isArray(result.media)
+                ? result.media
+                : [];
+
+            lastPage = Number(
+                result.pagination?.last_page || 1
+            );
+
+            currentPage = Number(
+                result.pagination?.current_page || 1
+            );
+
+            loadingMessage.style.display = 'none';
+
+            emptyMessage.style.display =
+                media.length ? 'none' : 'block';
+
+            media.forEach(function (item) {
+                const button = document.createElement('button');
+                const image = document.createElement('img');
+                const name = document.createElement('span');
+
+                button.type = 'button';
+                button.className = 'media-item';
+                button.title = item.file_name || 'صورة';
+
+                image.src = item.url;
+                image.alt = item.alt_text || item.file_name || '';
+                image.loading = 'lazy';
+
+                name.className = 'media-item-name';
+                name.textContent = item.file_name || 'بدون اسم';
+
+                button.appendChild(image);
+                button.appendChild(name);
+
+                button.addEventListener('click', function () {
+                    if (mediaPickerMode === 'editor-insert') {
+                        if (articleEditor) {
+                            articleEditor.execute('insertImage', {
+                                source: item.url
+                            });
+                        }
+
+                        closeModal();
+                        return;
+                    }
+
+                    mediaIdInput.value = item.id;
+                    fileInput.value = '';
+                    urlInput.value = '';
+                    removeImageInput.value = '0';
+
+                    showPreview(
+                        item.url,
+                        item.file_name || 'صورة من المكتبة'
+                    );
+
+                    closeModal();
+                });
+
+                mediaGrid.appendChild(button);
+            });
+
+            previousButton.disabled = currentPage <= 1;
+            nextButton.disabled = currentPage >= lastPage;
+
+            pageStatus.textContent =
+                'صفحة ' + currentPage + ' من ' + lastPage;
+        } catch (error) {
+            loadingMessage.style.display = 'none';
+            errorMessage.style.display = 'block';
+
+            previousButton.disabled = true;
+            nextButton.disabled = true;
+        }
+    }
+
+    openPickerButton.addEventListener('click', function () {
+        openModal('main-image');
+    });
+
+    insertInlineButton.addEventListener('click', function () {
+        openModal('editor-insert');
+    });
+
+    closePickerButton.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (
+            event.key === 'Escape' &&
+            modal.classList.contains('is-open')
+        ) {
+            closeModal();
+        }
+
+        if (
+            event.key === 'Escape' &&
+            editorContainer.classList.contains('editor-fullscreen')
+        ) {
+            exitFullscreenEditor();
+        }
+    });
+
+    searchButton.addEventListener('click', function () {
+        currentPage = 1;
+        loadMedia();
+    });
+
+    searchInput.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            currentPage = 1;
+            loadMedia();
+        }
+    });
+
+    previousButton.addEventListener('click', function () {
+        if (currentPage > 1) {
+            currentPage--;
+            loadMedia();
+        }
+    });
+
+    nextButton.addEventListener('click', function () {
+        if (currentPage < lastPage) {
+            currentPage++;
+            loadMedia();
+        }
+    });
+
+    fileInput.addEventListener('change', function () {
+        const file = this.files && this.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        mediaIdInput.value = '';
+        urlInput.value = '';
+        removeImageInput.value = '0';
+
+        clearObjectUrl();
+        objectUrl = URL.createObjectURL(file);
+
+        previewImage.src = objectUrl;
+        previewWrapper.style.display = 'block';
+        selectedImageName.textContent = file.name;
+    });
+
+    urlInput.addEventListener('input', function () {
+        const url = this.value.trim();
+
+        if (!url) {
+            if (!mediaIdInput.value && !fileInput.files.length) {
+                showPreview('');
+            }
+
+            return;
+        }
+
+        mediaIdInput.value = '';
+        fileInput.value = '';
+        removeImageInput.value = '0';
+
+        showPreview(url, 'رابط خارجي');
+    });
+
+    removeImageButton.addEventListener('click', function () {
+        mediaIdInput.value = '';
+        fileInput.value = '';
+        urlInput.value = '';
+        removeImageInput.value = '1';
+
+        showPreview('');
+    });
+
+    previewImage.addEventListener('error', function () {
+        previewWrapper.style.display = 'none';
+    });
+
+    statusInput.addEventListener(
+        'change',
+        updateScheduleVisibility
+    );
+
+    updateScheduleVisibility();
+
+    function exitFullscreenEditor() {
+        editorContainer.classList.remove('editor-fullscreen');
+        document.body.classList.remove('editor-fullscreen-active');
+
+        fullscreenButton.innerHTML =
+            '<i class="fa-solid fa-expand"></i> وضع الشاشة الكاملة';
+
+        window.dispatchEvent(new Event('resize'));
+    }
+
+    fullscreenButton.addEventListener('click', function () {
+        const isFullscreen = editorContainer.classList.toggle(
+            'editor-fullscreen'
+        );
+
+        document.body.classList.toggle(
+            'editor-fullscreen-active',
+            isFullscreen
+        );
+
+        fullscreenButton.innerHTML = isFullscreen
+            ? '<i class="fa-solid fa-compress"></i> إنهاء الشاشة الكاملة'
+            : '<i class="fa-solid fa-expand"></i> وضع الشاشة الكاملة';
+
+        window.dispatchEvent(new Event('resize'));
+    });
+
+    ClassicEditor
+        .create(document.getElementById('content-editor'), {
+            licenseKey: 'GPL',
+
+            plugins: [
+                Alignment,
+                Autoformat,
+                BlockQuote,
+                Bold,
+                Essentials,
+                FontBackgroundColor,
+                FontColor,
+                FontFamily,
+                FontSize,
+                Heading,
+                HorizontalLine,
+                Image,
+                ImageCaption,
+                ImageStyle,
+                ImageTextAlternative,
+                ImageToolbar,
+                ImageUpload,
+                Indent,
+                IndentBlock,
+                Italic,
+                Link,
+                LinkImage,
+                List,
+                Paragraph,
+                PasteFromOffice,
+                RemoveFormat,
+                SimpleUploadAdapter,
+                SourceEditing,
+                Strikethrough,
+                Table,
+                TableToolbar,
+                TextPartLanguage,
+                TextTransformation,
+                Underline
+            ],
+
+            translations: [translations],
+
+            language: {
+                ui: 'ar',
+                content: 'ar',
+                textPartLanguage: [
+                    {
+                        title: 'العربية',
+                        languageCode: 'ar'
+                    },
+                    {
+                        title: 'English',
+                        languageCode: 'en',
+                        textDirection: 'ltr'
+                    }
+                ]
+            },
+
+            toolbar: {
+                items: [
+                    'heading',
+                    '|',
+                    'fontFamily',
+                    'fontSize',
+                    '|',
+                    'bold',
+                    'italic',
+                    'underline',
+                    'strikethrough',
+                    '|',
+                    'fontColor',
+                    'fontBackgroundColor',
+                    'removeFormat',
+                    '|',
+                    'alignment',
+                    '|',
+                    'bulletedList',
+                    'numberedList',
+                    'outdent',
+                    'indent',
+                    '|',
+                    'blockQuote',
+                    'insertTable',
+                    'link',
+                    'uploadImage',
+                    'horizontalLine',
+                    '|',
+                    'textPartLanguage',
+                    '|',
+                    'sourceEditing',
+                    '|',
+                    'undo',
+                    'redo'
+                ]
+            },
+
+            fontFamily: {
+                options: [
+                    'default',
+                    'Arial, Helvetica, sans-serif',
+                    'Tahoma, Geneva, sans-serif',
+                    '"Traditional Arabic", serif',
+                    'Georgia, serif',
+                    '"Courier New", Courier, monospace',
+                    'Verdana, Geneva, sans-serif'
+                ],
+                supportAllValues: true
+            },
+
+            fontSize: {
+                options: [
+                    10,
+                    12,
+                    14,
+                    'default',
+                    18,
+                    20,
+                    24,
+                    28,
+                    32,
+                    40
+                ],
+                supportAllValues: true
+            },
+
+            image: {
+                toolbar: [
+                    'imageTextAlternative',
+                    'imageStyle:inline',
+                    'imageStyle:block',
+                    'imageStyle:side',
+                    '|',
+                    'linkImage'
+                ]
+            },
+
+            table: {
+                contentToolbar: [
+                    'tableColumn',
+                    'tableRow',
+                    'mergeTableCells'
+                ]
+            },
+
+            simpleUpload: {
+                uploadUrl: contentImageUploadUrl,
+                withCredentials: true,
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    Accept: 'application/json'
+                }
+            }
+        })
+        .then(function (editor) {
+            articleEditor = editor;
+
+            document
+                .getElementById('article-create-form')
+                .addEventListener('submit', function () {
+                    editor.updateSourceElement();
+                });
+        })
+        .catch(function (error) {
+            console.error('CKEditor failed to load:', error);
+
+            alert(
+                'تعذر تحميل محرر النصوص المتقدم. سيتم استخدام الحقل العادي بدلاً منه.'
+            );
+        });
+});
+</script>
+
+@endsection
