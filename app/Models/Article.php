@@ -20,6 +20,8 @@ class Article extends Model
     protected $fillable = [
         'category_id',
         'journalist_id',
+        'content_owner_name',
+        'content_owner_photo',
         'user_id',
         'title',
         'slug',
@@ -219,9 +221,7 @@ class Article extends Model
     public function getMainImageUrlAttribute(): ?string
     {
         if ($this->mainImageMedia?->file_path) {
-            return route('site.media', [
-                'path' => ltrim($this->mainImageMedia->file_path, '/'),
-            ]);
+            return $this->mainImageMedia->url;
         }
 
         if (blank($this->main_image)) {
@@ -239,5 +239,14 @@ class Article extends Model
         }
 
         return route('site.media', ['path' => $path]);
+    }
+
+    public function getContentOwnerPhotoUrlAttribute(): ?string
+    {
+        if (blank($this->content_owner_photo)) return null;
+        if (filter_var($this->content_owner_photo, FILTER_VALIDATE_URL)) return $this->content_owner_photo;
+
+        $path = preg_replace('#^/?(?:storage/app/public|public/storage|storage|public)/#', '', str_replace('\\\\', '/', $this->content_owner_photo));
+        return route('site.media', ['path' => ltrim((string) $path, '/')]);
     }
 }
