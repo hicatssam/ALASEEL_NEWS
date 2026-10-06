@@ -1131,6 +1131,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const logoSrc = @json(route('site.logo', ['v' => $siteSettings['_site_logo_version'] ?? 1]));
 
   const selectors = [
+    'main .article-main-media > img',
     'main .article-detail img',
     'main .article-content img',
     'main .article-body img',

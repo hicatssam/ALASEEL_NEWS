@@ -99,6 +99,10 @@
 <div class="card">
   <div class="card-header">
     <span class="card-title">الملفات ({{ $files->total() }})</span>
+    <form id="bulkDeleteForm" method="POST" action="{{ route('admin.media.bulk-destroy') }}" onsubmit="return confirm('نقل الوسائط المحددة إلى المحذوفات؟')">
+      @csrf @method('DELETE')
+      <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i> حذف المحدد</button>
+    </form>
   </div>
 
   <div class="card-body">
@@ -106,6 +110,9 @@
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
         @foreach($files as $file)
           <div style="border:1px solid #e8e8e8;border-radius:10px;overflow:hidden;position:relative">
+            <label style="position:absolute;z-index:2;top:7px;right:7px;background:#fff;padding:4px;border-radius:5px;box-shadow:0 1px 5px #0003">
+              <input type="checkbox" name="media_ids[]" value="{{ $file->id }}" form="bulkDeleteForm" aria-label="اختيار {{ $file->file_name }}">
+            </label>
             <div style="height:120px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;overflow:hidden">
               @if($file->file_type == 'image')
                 <img
@@ -170,8 +177,10 @@
 </div>
 
 <script>
-document.querySelector('label[class*="btn-primary"]').addEventListener('click', function () {
-    document.getElementById('fileInput').click();
+document.getElementById('bulkDeleteForm').addEventListener('submit', function (event) {
+    if (!document.querySelector('input[name="media_ids[]"]:checked')) {
+        event.preventDefault(); alert('اختر ملفًا واحدًا على الأقل.');
+    }
 });
 </script>
 @endsection

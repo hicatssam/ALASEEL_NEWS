@@ -121,7 +121,21 @@
 
                         <div
                             style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);flex-wrap:wrap">
-                            @if ($article->journalist)
+                            @if (in_array($article->content_type, ['story', 'opinion'], true) && $article->content_owner_name)
+                                <div style="display:flex;align-items:center;gap:10px">
+                                    <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;background:rgba(200,154,43,.15);border:1px solid rgba(200,154,43,.35)">
+                                        @if($article->content_owner_photo_url)
+                                            <img src="{{ $article->content_owner_photo_url }}" alt="{{ $article->content_owner_name }}" style="width:100%;height:100%;object-fit:cover">
+                                        @else
+                                            <div style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;color:var(--gold);font-weight:800">{{ mb_substr($article->content_owner_name, 0, 1) }}</div>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <small style="color:var(--muted)">{{ $article->content_type === 'opinion' ? 'صاحب الرأي' : 'كاتب القصة' }}</small>
+                                        <div style="font-size:13px;font-weight:800;color:var(--white)">{{ $article->content_owner_name }}</div>
+                                    </div>
+                                </div>
+                            @elseif ($article->journalist)
                                 @php
                                     $journalist = $article->journalist;
                                     $journalistImage = null;

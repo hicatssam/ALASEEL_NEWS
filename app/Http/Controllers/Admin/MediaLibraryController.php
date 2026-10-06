@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\MediaFile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class MediaLibraryController extends Controller
 {
@@ -237,10 +239,9 @@ class MediaLibraryController extends Controller
 
     public function destroy(MediaFile $mediaFile)
     {
-        /*
-         * سنضيف فحص استخدام الملف في المقالات بعد إضافة
-         * main_image_media_id إلى جدول articles.
-         */
+        if ($mediaFile->mainImageArticles()->exists()) {
+            return back()->with('error', 'لا يمكن حذف الملف لأنه مستخدم كصورة رئيسية في مقال.');
+        }
 
         ActivityLog::log(
             'delete',
@@ -255,6 +256,30 @@ class MediaLibraryController extends Controller
             'success',
             'تم نقل الملف إلى المحذوفات بنجاح.'
         );
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $data = $request->validate([
+            'media_ids' => ['required', 'array', 'min:1'],
+            'media_ids.*' => ['integer', 'distinct', 'exists:media_files,id'],
+        ]);
+
+        $files = MediaFile::query()->whereIn('id', $data['media_ids'])->get();
+        $blocked = $files->filter(fn (MediaFile $file) => $file->mainImageArticles()->exists());
+
+        if ($blocked->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'media_ids' => 'تعذر الحذف: بعض الملفات المحددة مستخدمة كصور رئيسية في مقالات.',
+            ]);
+        }
+
+        foreach ($files as $file) {
+            ActivityLog::log('delete', 'media', "Deleted file: {$file->file_name}");
+            $file->delete();
+        }
+
+        return back()->with('success', 'تم نقل '.count($files).' ملف/ملفات إلى المحذوفات.');
     }
 
     /**
