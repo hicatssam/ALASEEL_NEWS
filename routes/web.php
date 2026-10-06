@@ -228,6 +228,11 @@ Route::resource('team-members', TeamMemberController::class)
                     'media/{mediaFile}',
                     [MediaLibraryController::class, 'destroy']
                 )->name('media.destroy');
+
+                Route::delete(
+                    'media',
+                    [MediaLibraryController::class, 'bulkDestroy']
+                )->name('media.bulk-destroy');
             });
  
  
