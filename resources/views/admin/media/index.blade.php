@@ -99,19 +99,26 @@
 <div class="card">
   <div class="card-header">
     <span class="card-title">الملفات ({{ $files->total() }})</span>
-    <form id="bulkDeleteForm" method="POST" action="{{ route('admin.media.bulk-destroy') }}" onsubmit="return confirm('نقل الوسائط المحددة إلى المحذوفات؟')">
-      @csrf @method('DELETE')
-      <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i> حذف المحدد</button>
-    </form>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;font-weight:700">
+        <input type="checkbox" id="selectAllMedia">
+        تحديد كل ملفات الصفحة
+      </label>
+      <span id="selectedMediaCount" style="font-size:12px;color:#777">لم يتم التحديد</span>
+      <form id="bulkDeleteForm" method="POST" action="{{ route('admin.media.bulk-destroy') }}">
+        @csrf @method('DELETE')
+        <button type="submit" id="bulkDeleteButton" class="btn btn-danger btn-sm" disabled><i class="fa-solid fa-trash"></i> حذف المحدد</button>
+      </form>
+    </div>
   </div>
 
   <div class="card-body">
     @if($files->count())
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
         @foreach($files as $file)
-          <div style="border:1px solid #e8e8e8;border-radius:10px;overflow:hidden;position:relative">
+          <div class="media-library-card" style="border:1px solid #e8e8e8;border-radius:10px;overflow:hidden;position:relative">
             <label style="position:absolute;z-index:2;top:7px;right:7px;background:#fff;padding:4px;border-radius:5px;box-shadow:0 1px 5px #0003">
-              <input type="checkbox" name="media_ids[]" value="{{ $file->id }}" form="bulkDeleteForm" aria-label="اختيار {{ $file->file_name }}">
+              <input class="media-select-checkbox" type="checkbox" name="media_ids[]" value="{{ $file->id }}" form="bulkDeleteForm" aria-label="اختيار {{ $file->file_name }}">
             </label>
             <div style="height:120px;background:#f8f9fa;display:flex;align-items:center;justify-content:center;overflow:hidden">
               @if($file->file_type == 'image')
@@ -177,10 +184,37 @@
 </div>
 
 <script>
-document.getElementById('bulkDeleteForm').addEventListener('submit', function (event) {
-    if (!document.querySelector('input[name="media_ids[]"]:checked')) {
-        event.preventDefault(); alert('اختر ملفًا واحدًا على الأقل.');
-    }
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('bulkDeleteForm');
+  const selectAll = document.getElementById('selectAllMedia');
+  const checkboxes = [...document.querySelectorAll('.media-select-checkbox')];
+  const button = document.getElementById('bulkDeleteButton');
+  const count = document.getElementById('selectedMediaCount');
+
+  const refresh = () => {
+    const selected = checkboxes.filter(checkbox => checkbox.checked);
+    button.disabled = selected.length === 0;
+    count.textContent = selected.length ? `تم تحديد ${selected.length}` : 'لم يتم التحديد';
+    selectAll.checked = checkboxes.length > 0 && selected.length === checkboxes.length;
+    selectAll.indeterminate = selected.length > 0 && selected.length < checkboxes.length;
+    checkboxes.forEach(checkbox => checkbox.closest('.media-library-card')?.classList.toggle('is-selected', checkbox.checked));
+  };
+
+  selectAll?.addEventListener('change', () => {
+    checkboxes.forEach(checkbox => { checkbox.checked = selectAll.checked; });
+    refresh();
+  });
+  checkboxes.forEach(checkbox => checkbox.addEventListener('change', refresh));
+  form?.addEventListener('submit', function (event) {
+    const selected = checkboxes.filter(checkbox => checkbox.checked);
+    if (!selected.length || !confirm(`نقل ${selected.length} ملف/ملفات محددة إلى المحذوفات؟`)) event.preventDefault();
+  });
+  refresh();
 });
 </script>
+<style>
+.media-library-card{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+.media-library-card.is-selected{border-color:#c9a84c!important;box-shadow:0 0 0 2px rgba(201,168,76,.22);transform:translateY(-2px)}
+#bulkDeleteButton:disabled{opacity:.45;cursor:not-allowed}
+</style>
 @endsection
