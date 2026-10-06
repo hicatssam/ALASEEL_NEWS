@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Advertisement;
 use App\Models\Category;
 use App\Models\Video;
 use Illuminate\Http\Request;
@@ -80,9 +81,16 @@ class VideoController extends Controller
             ->limit(6)
             ->get();
 
+        $videoAds = Advertisement::query()
+            ->active()
+            ->forPosition('video')
+            ->latest()
+            ->get();
+
         return view('videos.show', compact(
             'video',
-            'related'
+            'related',
+            'videoAds'
         ));
     }
 }
