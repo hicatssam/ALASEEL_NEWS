@@ -27,6 +27,13 @@
           </div>
         </div>
       </div>
+      @if(isset($videoAds) && $videoAds->isNotEmpty())
+      <section class="article-inside-ads" aria-label="إعلانات الفيديو" style="margin-top:18px">
+        @foreach($videoAds as $ad)
+          @include('partials.ad-unit', ['ad' => $ad, 'class' => 'article-inside-ad'])
+        @endforeach
+      </section>
+      @endif
     </div>
     <aside>
       <div class="sidebar-widget">

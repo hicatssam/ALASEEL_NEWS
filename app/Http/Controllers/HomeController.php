@@ -111,13 +111,7 @@ class HomeController extends Controller
 
         $homepageAds = Advertisement::query()
             ->active()
-            ->where(function ($query): void {
-                $query->where('position', 'homepage')
-                    ->orWhere(function ($query): void {
-                        $query->where('position', 'video')
-                            ->where('type', 'video');
-                    });
-            })
+            ->forPosition('homepage')
             ->latest()
             ->get();
 

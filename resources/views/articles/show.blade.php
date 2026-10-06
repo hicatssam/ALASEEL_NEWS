@@ -215,6 +215,14 @@
                             {!! $article->content !!}
                         </div>
 
+                        @if(isset($insideAds) && $insideAds->isNotEmpty())
+                            <section class="article-inside-ads" aria-label="إعلانات داخل المقال">
+                                @foreach($insideAds as $ad)
+                                    @include('partials.ad-unit', ['ad' => $ad, 'class' => 'article-inside-ad'])
+                                @endforeach
+                            </section>
+                        @endif
+
                         @if ($article->tags->count())
                             <div style="margin-bottom:24px;padding-top:16px;border-top:1px solid var(--border)">
                                 <div style="font-weight:700;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:8px"><i
@@ -394,6 +402,14 @@
                             @endforeach
                         </div>
                     </div>
+
+                    @if(isset($sidebarAds) && $sidebarAds->isNotEmpty())
+                        <div class="article-sidebar-ads" aria-label="إعلانات الشريط الجانبي">
+                            @foreach($sidebarAds as $ad)
+                                @include('partials.ad-unit', ['ad' => $ad, 'class' => 'article-sidebar-ad'])
+                            @endforeach
+                        </div>
+                    @endif
                 </aside>
             </div>
         </div>

@@ -93,17 +93,9 @@ class SiteAssetController extends Controller
 
         $path = str_replace('\\', '/', trim($path));
 
-        $path = preg_replace(
-            '#^/?storage/app/public/#',
-            '',
-            $path
-        );
-
-        $path = preg_replace(
-            '#^/?public/#',
-            '',
-            $path
-        );
+        $path = preg_replace('#^.*?/storage/app/public/#', '', $path);
+        $path = preg_replace('#^.*?/public/storage/#', '', $path);
+        $path = preg_replace('#^/?public/#', '', $path);
 
         $path = preg_replace(
             '#^/?storage/#',

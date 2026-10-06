@@ -61,9 +61,9 @@ class MediaFile extends Model
             return $this->file_path;
         }
 
-        $path = str_replace('\\\\', '/', trim((string) $this->file_path));
-        $path = preg_replace('#^/?storage/app/public/#', '', $path);
-        $path = preg_replace('#^/?public/storage/#', '', $path);
+        $path = str_replace('\\', '/', trim((string) $this->file_path));
+        $path = preg_replace('#^.*?/storage/app/public/#', '', $path);
+        $path = preg_replace('#^.*?/public/storage/#', '', $path);
         $path = preg_replace('#^/?storage/#', '', $path);
         $path = preg_replace('#^/?public/#', '', $path);
 

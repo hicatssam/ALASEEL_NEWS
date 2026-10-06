@@ -602,6 +602,19 @@ body::after{display:none}
 .ad-media-backdrop{position:absolute;z-index:0;inset:-16px;width:calc(100% + 32px);height:calc(100% + 32px);object-fit:cover;filter:blur(18px) brightness(.48) saturate(1.15);transform:scale(1.08);opacity:.9}
 .header-ad-image,.footer-ad-image{position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:cover;object-position:center;background:transparent;padding:0}
 .ad-flip-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;color:rgba(255,255,255,.78);font-size:15px;font-weight:800;background:radial-gradient(circle at 50% 20%,rgba(200,154,43,.2),transparent 58%),#111}
+.site-ad-unit{overflow:hidden;border:1px solid var(--border);border-radius:12px;background:#111}
+.site-ad-unit>a{display:block;color:inherit;width:100%;height:100%}
+.site-ad-unit img,.site-ad-unit video{display:block;width:100%;height:100%;max-width:100%;object-fit:contain;background:#0b0b0b}
+.site-ad-fallback{min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:18px;text-align:center;background:radial-gradient(circle,rgba(200,154,43,.16),transparent 70%)}
+.site-ad-fallback small{color:var(--gold)}
+.article-inside-ads{display:grid;gap:14px;margin:0 0 28px}
+.article-inside-ad{width:100%;aspect-ratio:16/5}
+.article-sidebar-ads{display:grid;gap:14px;margin-top:16px}
+.article-sidebar-ad{width:100%;aspect-ratio:4/3}
+.ad-popup-backdrop{position:fixed;inset:0;z-index:10050;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(4px)}
+.ad-popup-dialog{position:relative;width:min(92vw,720px);max-height:88vh}
+.ad-popup-dialog .site-ad-unit{width:100%;max-height:82vh;aspect-ratio:16/9}
+.ad-popup-close{position:absolute;z-index:2;top:-13px;left:-13px;width:36px;height:36px;border:0;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#111;cursor:pointer;font-size:18px;box-shadow:0 4px 16px #0008}
 
 .developer-credit{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap;margin-top:10px;color:rgba(255,255,255,.62);font-size:10.5px}
 .developer-credit img{width:auto;height:28px;max-width:88px;object-fit:contain;background:#fff;border-radius:5px;padding:3px 6px}
@@ -859,7 +872,7 @@ html[dir="ltr"] .article-logo-watermark{right:auto;left:14px}
   </div>
 </div>
 {{-- Header-position ads: only the first 3 ads, compact and moving as a ticker --}}
-@if(isset($headerAds) && $headerAds->isNotEmpty() && !request()->routeIs('home'))
+@if(isset($headerAds) && $headerAds->isNotEmpty())
 <div class="header-ads">
   <div class="ad-flip-viewport" data-ad-flip data-interval="6000">
     <div class="ad-flip-track">
@@ -1006,6 +1019,16 @@ html[dir="ltr"] .article-logo-watermark{right:auto;left:14px}
   </div>
 </footer>
 
+@if(isset($popupAds) && $popupAds->isNotEmpty())
+  @php($popupAd = $popupAds->first())
+  <div class="ad-popup-backdrop" id="siteAdPopup" hidden>
+    <div class="ad-popup-dialog" role="dialog" aria-modal="true" aria-label="إعلان: {{ $popupAd->title }}">
+      <button type="button" class="ad-popup-close" data-close-ad-popup aria-label="إغلاق الإعلان"><i class="fa-solid fa-times"></i></button>
+      @include('partials.ad-unit', ['ad' => $popupAd, 'class' => 'popup-ad'])
+    </div>
+  </div>
+@endif
+
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('[data-ad-flip]').forEach((viewport)=>{
@@ -1024,6 +1047,15 @@ document.addEventListener('DOMContentLoaded',()=>{
       setTimeout(()=>current.classList.remove('is-leaving'),750);
     },delay);
   });
+
+  const popup=document.getElementById('siteAdPopup');
+  if(popup && !sessionStorage.getItem('alaseel-ad-popup-seen')){
+    window.setTimeout(()=>{popup.hidden=false},1200);
+    const close=()=>{popup.hidden=true;sessionStorage.setItem('alaseel-ad-popup-seen','1')};
+    popup.querySelector('[data-close-ad-popup]')?.addEventListener('click',close);
+    popup.addEventListener('click',(event)=>{if(event.target===popup)close()});
+    document.addEventListener('keydown',(event)=>{if(event.key==='Escape' && !popup.hidden)close()});
+  }
 
   const target=document.getElementById('header-weather-value');
   if(!target)return;
