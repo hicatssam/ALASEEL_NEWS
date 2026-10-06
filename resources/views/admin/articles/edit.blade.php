@@ -315,7 +315,8 @@
                                 value="1"
                                 @checked(old('is_breaking', $article->is_breaking))
                             >
-                            {{ __('admin.label_breaking_news') }}
+                            <i class="fa-solid fa-bolt" style="color:#e22b32"></i>
+                            آخر المستجدات
                         </label>
 
                         <label class="form-check">

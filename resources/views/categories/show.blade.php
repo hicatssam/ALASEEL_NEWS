@@ -54,7 +54,7 @@
                                 <div class="badge-overlay">
                                     @if ($article->is_breaking)
                                         <span class="badge-breaking">
-                                            {{ __('messages.badge_breaking') }}
+                                            آخر المستجدات
                                         </span>
                                     @endif
                                 </div>
@@ -80,10 +80,6 @@
                                         {{ $article->published_at?->diffForHumans() }}
                                     </span>
 
-                                    <span>
-                                        <i class="fa-solid fa-eye"></i>
-                                        {{ number_format($article->views) }}
-                                    </span>
                                 </div>
                             </div>
                         </div>

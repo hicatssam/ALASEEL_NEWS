@@ -21,7 +21,11 @@
 
             return asset('storage/' . ltrim($path, '/'));
         };
-        $articleImage = $mediaUrl($article->main_image_url ?? ($article->main_image ?? null)) ?: asset('images/social-share.png');
+        $articleImage = route('site.article-image', [
+            'article' => $article->id,
+            'v' => $article->updated_at?->timestamp ?? 1,
+            'lv' => $siteSettings['_site_logo_version'] ?? 1,
+        ]);
         $articleVideo = $mediaUrl($article->video_url ?? ($article->video ?? null));
         $articleCanonicalUrl = route('articles.show', $article->slug);
         $articleShareUrl = route('articles.short', ['id' => $article->id]);
@@ -54,7 +58,7 @@
         @if ($articleImage)
             <meta property="og:image" content="{{ $articleImage }}">
             <meta property="og:image:secure_url" content="{{ $articleImage }}">
-            <meta property="og:image:type" content="image/png">
+            <meta property="og:image:type" content="image/jpeg">
             <meta property="og:image:width" content="1200">
             <meta property="og:image:height" content="630">
             <meta property="og:image:alt" content="{{ $article->title }}">
@@ -99,7 +103,7 @@
                                 </a>
                             @endif
                             @if ($article->is_breaking)
-                                <span class="badge-breaking">{{ __('messages.breaking') }}</span>
+                                <span class="badge-breaking">آخر المستجدات</span>
                             @endif
                             @if ($article->is_featured)
                                 <span class="badge-featured">⭐ {{ __('messages.badge_featured') }}</span>
@@ -223,15 +227,9 @@
                                         <a href="{{ route('articles.show', $relatedArticle->slug) }}"
                                             class="article-related-card">
                                             <div class="article-related-image">
-                                                @php
-                                                    $relatedImage = $mediaUrl(
-                                                        $relatedArticle->main_image_url ??
-                                                            ($relatedArticle->main_image ?? null),
-                                                    );
-                                                @endphp
-                                                <img src="{{ $relatedImage ?: route('site.logo') }}" alt="{{ $relatedArticle->title }}"
+                                                @php($relatedImage = route('site.article-image', ['article' => $relatedArticle->id, 'v' => $relatedArticle->updated_at?->timestamp ?? 1, 'lv' => $siteSettings['_site_logo_version'] ?? 1]))
+                                                <img src="{{ $relatedImage }}" alt="{{ $relatedArticle->title }}"
                                                     loading="lazy"
-                                                    style="{{ $relatedImage ? '' : 'object-fit:contain;background:#111;padding:14px' }}"
                                                     onerror="this.onerror=null;this.src='{{ route('site.logo') }}';this.style.objectFit='contain';this.style.padding='14px'">
 
                                                 @if ($relatedArticle->category)
@@ -245,8 +243,6 @@
                                                 <div class="article-related-meta">
                                                     <span><i class="fa-regular fa-calendar"></i>
                                                         {{ $relatedArticle->published_at?->format('Y/m/d') }}</span>
-                                                    <span><i class="fa-regular fa-eye"></i>
-                                                        {{ number_format($relatedArticle->views ?? 0) }}</span>
                                                 </div>
                                             </div>
                                         </a>
@@ -354,12 +350,9 @@
                                 <a href="{{ route('articles.show', $r->slug) }}" class="widget-article">
                                     <div
                                         style="width:68px;height:60px;border-radius:6px;background:var(--surface2);flex-shrink:0;overflow:hidden">
-                                        @php
-                                            $sidebarImage = $mediaUrl($r->main_image_url ?? ($r->main_image ?? null));
-                                        @endphp
-                                        <img src="{{ $sidebarImage ?: route('site.logo') }}" class="widget-article-img"
+                                        @php($sidebarImage = route('site.article-image', ['article' => $r->id, 'v' => $r->updated_at?->timestamp ?? 1, 'lv' => $siteSettings['_site_logo_version'] ?? 1]))
+                                        <img src="{{ $sidebarImage }}" class="widget-article-img"
                                             alt="{{ $r->title }}"
-                                            style="{{ $sidebarImage ? '' : 'object-fit:contain;background:#111;padding:8px' }}"
                                             onerror="this.onerror=null;this.src='{{ route('site.logo') }}';this.style.objectFit='contain';this.style.padding='8px'">
                                     </div>
                                     <div class="widget-article-body">
@@ -382,8 +375,6 @@
                                         {{ $i + 1 }}</div>
                                     <div class="widget-article-body">
                                         <div class="widget-article-title">{{ Str::limit($p->title, 65) }}</div>
-                                        <div class="widget-article-meta">
-                                            {{ __('messages.views_count', ['count' => number_format($p->views)]) }}</div>
                                     </div>
                                 </a>
                             @endforeach

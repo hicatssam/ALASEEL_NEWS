@@ -1,4 +1,8 @@
-@php $locale = app()->getLocale(); $isRtl = $locale === 'ar'; $dir = $isRtl ? 'rtl' : 'ltr'; @endphp
+@php
+    $locale = app()->getLocale();
+    $isRtl = $locale === 'ar';
+    $dir = $isRtl ? 'rtl' : 'ltr';
+@endphp
 @php
     $socialLinks = [
         'facebook_url' => [
@@ -44,13 +48,10 @@
 <title>@yield('title',__('messages.site_name')) — {{ __('messages.site_tagline') }}</title>
 <meta name="description" content="@yield('description',__('messages.site_name'))">
 <link rel="canonical" href="@yield('canonical', url()->current())">
-<meta name="theme-color" content="#0B0B0B">
-@php($siteIconVersion = \App\Models\Setting::query()->where('key', 'site_logo')->first()?->updated_at?->timestamp ?? 1)
-<link rel="icon" type="image/png" sizes="32x32" href="{{ route('site.icon', ['size' => 32, 'v' => $siteIconVersion]) }}">
-<link rel="icon" type="image/png" sizes="192x192" href="{{ route('site.icon', ['size' => 192, 'v' => $siteIconVersion]) }}">
-<link rel="apple-touch-icon" sizes="180x180" href="{{ route('site.icon', ['size' => 180, 'v' => $siteIconVersion]) }}">
-<link rel="manifest" href="{{ route('site.manifest', ['v' => $siteIconVersion]) }}">
-@php($googleSiteVerification = $siteSettings['google_site_verification'] ?? 'SSuvL3jOeVusrbyFXEj4R4BDoK7ZXCH0yHLyAjqhcuM')
+@php
+    $googleSiteVerification = $siteSettings['google_site_verification']
+        ?? 'SSuvL3jOeVusrbyFXEj4R4BDoK7ZXCH0yHLyAjqhcuM';
+@endphp
 @if(filled($googleSiteVerification))
 <meta name="google-site-verification" content="{{ $googleSiteVerification }}">
 @endif
@@ -196,24 +197,13 @@ html[dir="ltr"] .search-btn{border-radius:8px 0 0 8px}
 .nav-links{display:flex;gap:0;list-style:none;margin:0;padding:0}
 .nav-links li a{display:block;padding:13px 18px;color:rgba(255,255,255,.65);font-size:13.5px;font-weight:600;transition:.2s;border-bottom:2px solid transparent;white-space:nowrap}
 .nav-links li a:hover,.nav-links li a.active{color:var(--gold);border-bottom-color:var(--gold)}
-@media(min-width:901px){
-  .navbar .container{max-width:none;padding-inline:clamp(14px,1.8vw,34px)}
-  .nav-links{width:100%;min-width:0;justify-content:space-between;align-items:stretch}
-  .nav-links>li{min-width:0;flex:0 1 auto}
-  .nav-links>li>a{display:flex;align-items:center;justify-content:center;height:100%;padding:13px clamp(5px,.62vw,12px);font-size:clamp(11px,.7vw,13.5px)}
-}
 .hamburger{display:none;color:var(--white);font-size:20px;padding:13px;cursor:pointer}
 html[dir="rtl"] .hamburger{margin-right:auto}
 html[dir="ltr"] .hamburger{margin-left:auto}
 /* ── Breaking bar ──────────────────────────────────────── */
 .breaking-bar{background:#0b0b0b;color:#fff;padding:7px 0;overflow:hidden;border-top:1px solid #181818;border-bottom:1px solid #242424}
 .breaking-bar .container{display:flex;align-items:center;gap:12px}
-.breaking-label{position:relative;isolation:isolate;overflow:hidden;background:var(--red);padding:4px 13px;border-radius:5px;font-size:12px;font-weight:800;white-space:nowrap;letter-spacing:.3px;box-shadow:0 0 0 0 rgba(226,39,45,.45);animation:latestLabelPulse 2.2s ease-in-out infinite}
-.breaking-label::after{content:"";position:absolute;z-index:-1;top:-70%;bottom:-70%;left:-35%;width:22%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:skewX(-18deg);animation:latestLabelShine 3.6s ease-in-out infinite}
-.breaking-label .fa-circle{color:#fff;filter:drop-shadow(0 0 4px rgba(255,255,255,.9));animation:latestLabelDot 1.15s ease-in-out infinite}
-@keyframes latestLabelPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(226,39,45,.35)}50%{transform:scale(1.025);box-shadow:0 0 0 6px rgba(226,39,45,0)}}
-@keyframes latestLabelShine{0%,58%{left:-35%;opacity:0}68%{opacity:1}88%,100%{left:120%;opacity:0}}
-@keyframes latestLabelDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.72)}}
+.breaking-label{background:var(--red);padding:3px 12px;border-radius:4px;font-size:12px;font-weight:800;white-space:nowrap;letter-spacing:.3px}
 .breaking-ticker{font-size:13px;white-space:nowrap;overflow:hidden;display:flex;gap:0;flex:1}
 .breaking-item{display:inline-flex;align-items:center;gap:8px;padding:0 20px}
 .breaking-dot{width:6px;height:6px;background:rgba(255,255,255,.6);border-radius:50%}
@@ -222,7 +212,6 @@ html[dir="ltr"] .hamburger{margin-left:auto}
 .breaking-rotator-item.is-active{opacity:1;animation:latestUpdateMove 18s linear infinite}
 @keyframes latestUpdateMove{from{transform:translateX(-110%)}to{transform:translateX(100vw)}}
 @keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-@media (prefers-reduced-motion:reduce){.breaking-label,.breaking-label::after,.breaking-label .fa-circle{animation:none}}
 /* ── Container ──────────────────────────────────────────── */
 .container{max-width:1240px;margin:0 auto;padding:0 20px}
 .main-content{padding:32px 0}
@@ -295,9 +284,7 @@ html[dir="ltr"] .newsletter-btn{border-radius:8px 0 0 8px;font-family:'Inter',sa
 .newsletter-btn:hover{background:var(--gold-light)}
 /* ── Footer ─────────────────────────────────────────────── */
 .site-footer{background:var(--surface);border-top:1px solid var(--border);margin-top:48px}
-.footer-main{padding:46px 0 38px;display:grid;grid-template-columns:minmax(260px,1.35fr) repeat(2,minmax(150px,1fr)) minmax(220px,1.15fr);gap:clamp(30px,4vw,56px);align-items:start}
-.footer-column{min-width:0}
-.footer-brand-column{padding-inline-end:10px}
+.footer-main{padding:44px 0;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
 .footer-brand-name{font-size:17px;font-weight:900;color:var(--white);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 .footer-brand-badge{width:32px;height:32px;background:var(--gold);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:var(--black);font-family:'Inter',sans-serif}
 .footer-brand-desc{font-size:12.5px;color:rgba(255,255,255,.45);line-height:1.8}
@@ -309,15 +296,7 @@ html[dir="ltr"] .newsletter-btn{border-radius:8px 0 0 8px;font-family:'Inter',sa
 .footer-social{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
 .footer-social a{width:34px;height:34px;border-radius:7px;background:rgba(255,255,255,.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;color:rgba(255,255,255,.5);transition:.2s}
 .footer-social a:hover{background:var(--gold);color:var(--black);border-color:var(--gold)}
-.footer-bottom{border-top:1px solid var(--border);padding:18px 0;display:flex;align-items:center;justify-content:space-between;gap:20px;font-size:11.5px;color:rgba(255,255,255,.32)}
-.footer-copyright{line-height:1.7}
-.footer-developer{display:flex;align-items:center;gap:9px;flex-shrink:0;color:rgba(255,255,255,.55)}
-.footer-developer img{width:auto;height:30px;max-width:92px;object-fit:contain;background:#fff;border-radius:6px;padding:3px 7px}
-.footer-developer strong{color:var(--gold)}
-
-/* ── Professional scroll reveal ─────────────────────────── */
-html.reveal-ready [data-scroll-reveal]{opacity:0;transform:translate3d(0,34px,0) scale(.985);filter:blur(3px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1),filter .55s ease;transition-delay:var(--reveal-delay,0ms);will-change:opacity,transform,filter}
-html.reveal-ready [data-scroll-reveal].is-revealed{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}
+.footer-bottom{border-top:1px solid var(--border);padding:16px 0;text-align:center;font-size:11.5px;color:rgba(255,255,255,.25)}
 /* ── Buttons ──────────────────────────────────────────────── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;font-size:13.5px;font-weight:700;cursor:pointer;border:none;transition:.2s}
 html[dir="rtl"] .btn{font-family:'Cairo',sans-serif}
@@ -355,7 +334,6 @@ html[dir="ltr"] .alert-error{background:rgba(214,40,40,.12);color:#fca5a5;border
   .articles-grid{grid-template-columns:1fr}
   .articles-grid-4{grid-template-columns:1fr 1fr}
   .footer-main{grid-template-columns:1fr 1fr}
-  .footer-bottom{align-items:flex-start}
   .header-inner{flex-wrap:wrap;gap:10px;padding:10px 0}
   .search-form{order:3;width:100%;max-width:100%}
   .hamburger{display:block}
@@ -449,7 +427,6 @@ img{height:auto}
   .newsletter-form{flex-direction:column;gap:9px}
   .newsletter-input,.newsletter-btn{width:100%;border-radius:8px!important}
   .footer-main{grid-template-columns:1fr;padding:30px 0;gap:24px}
-  .footer-bottom{flex-direction:column;gap:12px}
   .site-footer{margin-top:32px}
   .mobile-nav{padding:20px 18px;padding-bottom:max(24px,env(safe-area-inset-bottom))}
   .pagination a,.pagination span{padding:7px 11px;font-size:12px}
@@ -466,7 +443,6 @@ img{height:auto}
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
-  html.reveal-ready [data-scroll-reveal]{opacity:1!important;transform:none!important;filter:none!important}
 }
 
 /* ── Desktop categories dropdown ─────────────────────────── */
@@ -631,6 +607,56 @@ body::after{display:none}
 .developer-credit img{width:auto;height:28px;max-width:88px;object-fit:contain;background:#fff;border-radius:5px;padding:3px 6px}
 .developer-credit strong{color:var(--gold)}
 @media(max-width:640px){.site-brand img{max-width:135px!important;max-height:48px!important}.site-brand-name{font-size:12px;white-space:normal;max-width:110px}.header-ads,.footer-ads-ticker{padding:6px 8px}.ad-flip-viewport{width:min(94vw,520px);aspect-ratio:16/5}}
+
+
+/* ── Single article-image logo watermark ────────────────── */
+.article-logo-watermark-target{position:relative!important}
+.article-logo-watermark{
+  position:absolute;
+  right:14px;
+  bottom:14px;
+  z-index:8;
+  width:clamp(58px,9vw,105px);
+  max-height:58px;
+  object-fit:contain;
+  pointer-events:none;
+  user-select:none;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.55));
+}
+html[dir="ltr"] .article-logo-watermark{right:auto;left:14px}
+@media(max-width:640px){
+  .article-logo-watermark{right:9px;bottom:9px;width:62px;max-height:42px}
+  html[dir="ltr"] .article-logo-watermark{right:auto;left:9px}
+}
+
+/* ── Latest updates: always visible under the header logo row ── */
+.latest-updates-bar{background:#0d0d0d;border-top:1px solid #222;border-bottom:1px solid #303030;color:#fff;overflow:hidden}
+.latest-updates-bar .container{display:flex;align-items:center;gap:10px;min-height:40px}
+.latest-updates-label{display:flex;align-items:center;gap:6px;flex:0 0 auto;background:var(--gold);color:#090909;border-radius:5px;padding:5px 11px;font-size:11px;font-weight:900;white-space:nowrap}
+.latest-updates-window{flex:1;min-width:0;overflow:hidden;position:relative}
+.latest-updates-items{display:flex;align-items:center;gap:0;width:max-content;min-width:100%;white-space:nowrap}
+.latest-update-item{display:inline-flex;align-items:center;gap:10px;padding:4px 18px;color:#f1f1f1;font-size:12.5px;font-weight:700}
+.latest-update-item:hover{color:var(--gold-light)}
+.latest-update-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);flex:0 0 auto}
+.latest-updates-empty{font-size:12px;color:rgba(255,255,255,.6);padding:4px 8px}
+
+/* ── Urgent breaking flash fixed at bottom of viewport ── */
+.urgent-flash-wrap{position:fixed;left:0;right:0;bottom:max(12px,env(safe-area-inset-bottom));z-index:9999;display:flex;justify-content:center;padding:0 12px;pointer-events:none}
+.urgent-flash{width:min(920px,100%);min-height:58px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;background:linear-gradient(135deg,#9f0c14,#e3222d 52%,#a90d16);color:#fff;border:1px solid rgba(255,255,255,.22);border-radius:13px;box-shadow:0 18px 55px rgba(0,0,0,.6),0 0 25px rgba(214,40,40,.28);overflow:hidden;pointer-events:auto;animation:urgentFlashIn .45s ease both}
+.urgent-flash-label{align-self:stretch;display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.2);padding:0 16px;font-size:13px;font-weight:900;white-space:nowrap}
+.urgent-flash-dot{width:9px;height:9px;border-radius:50%;background:#fff;animation:urgentPulse 1.3s infinite}
+.urgent-flash-body{min-width:0;padding:11px 4px;font-size:14px;font-weight:800;line-height:1.6}
+.urgent-flash-body a{color:#fff}.urgent-flash-body a:hover{text-decoration:underline}
+.urgent-flash-close{width:36px;height:36px;margin-inline-end:8px;border:0;border-radius:50%;background:rgba(0,0,0,.2);color:#fff;cursor:pointer;font-size:15px}
+@keyframes urgentPulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.6)}75%{box-shadow:0 0 0 9px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+@keyframes urgentFlashIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){
+ .latest-updates-bar .container{min-height:36px;gap:7px}.latest-updates-label{font-size:9.5px;padding:4px 7px}.latest-update-item{font-size:10.5px;padding-inline:11px}
+ .urgent-flash-wrap{padding:0 7px;bottom:max(7px,env(safe-area-inset-bottom))}
+ .urgent-flash{min-height:54px;grid-template-columns:auto minmax(0,1fr) auto;border-radius:10px}
+ .urgent-flash-label{padding:0 9px;font-size:11px}.urgent-flash-dot{width:7px;height:7px}.urgent-flash-body{font-size:12px}.urgent-flash-close{width:31px;height:31px;margin-inline-end:5px}
+}
+
 </style>
 @stack('styles')
 </head>
@@ -679,11 +705,11 @@ body::after{display:none}
           <i class="fa-solid fa-cloud-sun" style="color:var(--gold)"></i>
           <span id="header-weather-value">طقس غزة</span>
         </div>
-        {{-- <div class="lang-switcher">
+        <div class="lang-switcher">
           <a href="{{ route('language.switch','ar') }}" class="{{ $locale==='ar'?'active':'' }}">ع</a>
           <a href="{{ route('language.switch','en') }}" class="{{ $locale==='en'?'active':'' }}">EN</a>
           <a href="{{ route('language.switch','fr') }}" class="{{ $locale==='fr'?'active':'' }}">FR</a>
-        </div> --}}
+        </div>
         @auth
         {{-- <a href="{{ route('admin.dashboard') }}" class="btn-cta"><i class="fa-solid fa-gauge-high"></i> {{ __('messages.btn_dashboard') }}</a> --}}
         @else
@@ -693,31 +719,31 @@ body::after{display:none}
     </div>
   </div>
 
-  {{-- آخر المستجدات: يظهر في جميع صفحات الموقع مباشرة أسفل الهيدر --}}
-  @if(isset($globalBreakingNews) && $globalBreakingNews->isNotEmpty())
-  <div class="breaking-bar" id="latest-updates-bar">
+  {{-- آخر المستجدات: يظهر الشريط دائماً تحت صف الشعار --}}
+  <div class="latest-updates-bar">
     <div class="container">
-      <div class="breaking-label">
-        <i class="fa-solid fa-circle" style="font-size:7px;margin-inline-end:5px"></i>
-        {{ app()->getLocale() === 'ar' ? 'آخر المستجدات' : (app()->getLocale() === 'fr' ? 'Dernières nouvelles' : 'Latest updates') }}
+      <div class="latest-updates-label">
+        <i class="fa-solid fa-bolt"></i>
+        <span>آخر المستجدات</span>
       </div>
-      <div class="breaking-ticker" dir="ltr">
-        <div class="breaking-rotator" id="breaking-news-rotator">
-          @foreach($globalBreakingNews as $index => $breakingItem)
-            <a
-              href="{{ route('articles.show', $breakingItem->slug) }}"
-              class="breaking-item breaking-rotator-item {{ $index === 0 ? 'is-active' : '' }}"
-              dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}"
-              @if($index !== 0) hidden @endif
-            >
-              <span class="breaking-dot"></span>{{ $breakingItem->title }}
+
+      <div class="latest-updates-window">
+        <div class="latest-updates-items" id="latestUpdatesItems">
+          @php
+            $latestUpdatesForHeader = $globalLatestUpdates ?? collect();
+          @endphp
+          @forelse($latestUpdatesForHeader as $update)
+            <a href="{{ route('articles.show', $update->slug) }}" class="latest-update-item">
+              <span>{{ $update->title }}</span>
+              <span class="latest-update-dot"></span>
             </a>
-          @endforeach
+          @empty
+            <span class="latest-updates-empty">لا توجد مستجدات منشورة حالياً</span>
+          @endforelse
         </div>
       </div>
     </div>
   </div>
-  @endif
 
   <nav class="navbar">
     <div class="container">
@@ -758,10 +784,7 @@ body::after{display:none}
         </li>
     @endforeach
         <li><a href="{{ route('videos.index') }}" class="{{ request()->routeIs('videos.*') ? 'active' : '' }}">{{ __('messages.nav_videos') }}</a></li>
-        <li><a href="{{ route('content.index','article') }}">المقالات</a></li>
-        <li><a href="{{ route('content.index','story') }}">القصص</a></li>
-        <li><a href="{{ route('content.index','report') }}">التقارير</a></li>
-        <li><a href="{{ route('content.index','opinion') }}">الآراء</a></li>
+       
         <li>
           <a href="{{ route('live') }}" class="{{ request()->routeIs('live') ? 'active' : '' }}" style="display:flex;align-items:center;gap:6px">
             {{ __('messages.nav_live') }}
@@ -832,8 +855,8 @@ body::after{display:none}
         @if($ad->link)<a href="{{ $ad->link }}" target="_blank" rel="noopener noreferrer sponsored" style="display:block;width:100%;height:100%">@endif
         @if($ad->image_url)
           <span class="ad-media-shell">
-            @if(strtolower(trim((string) $ad->type)) === 'video')
-              <video src="{{ $ad->image_url }}" class="header-ad-image" data-ad-video muted playsinline preload="auto" aria-label="{{ $ad->title }}"></video>
+            @if($ad->type === 'video')
+              <video src="{{ $ad->image_url }}" class="header-ad-image" autoplay muted loop playsinline preload="metadata" aria-label="{{ $ad->title }}"></video>
             @else
               <img src="{{ $ad->image_url }}" alt="" aria-hidden="true" class="ad-media-backdrop" loading="lazy">
               <img src="{{ $ad->image_url }}" alt="{{ $ad->title }}" class="header-ad-image" loading="lazy">
@@ -881,8 +904,8 @@ body::after{display:none}
         @if($ad->link)<a href="{{ $ad->link }}" target="_blank" rel="noopener noreferrer sponsored" style="display:block;width:100%;height:100%">@endif
         @if($ad->image_url)
           <span class="ad-media-shell">
-            @if(strtolower(trim((string) $ad->type)) === 'video')
-              <video src="{{ $ad->image_url }}" class="footer-ad-image" data-ad-video muted playsinline preload="auto" aria-label="{{ $ad->title }}"></video>
+            @if($ad->type === 'video')
+              <video src="{{ $ad->image_url }}" class="footer-ad-image" autoplay muted loop playsinline preload="metadata" aria-label="{{ $ad->title }}"></video>
             @else
               <img src="{{ $ad->image_url }}" alt="" aria-hidden="true" class="ad-media-backdrop" loading="lazy">
               <img src="{{ $ad->image_url }}" alt="{{ $ad->title }}" class="footer-ad-image" loading="lazy">
@@ -902,7 +925,7 @@ body::after{display:none}
   <div class="container">
     <div class="footer-main">
       {{-- Brand + description + social --}}
-      <div class="footer-column footer-brand-column">
+      <div>
         <div class="footer-brand-name">
          @include('partials.site-logo', [
     'class' => 'footer-logo',
@@ -913,6 +936,10 @@ body::after{display:none}
         <p class="footer-brand-desc">
           {{ $siteSettings['footer_text'] ?? ($siteSettings['site_tagline'] ?? __('messages.site_tagline')) }}
         </p>
+        <div class="developer-credit">
+          <img src="{{ asset('images/company/one-logo.png') }}" alt="ONE Company" loading="lazy">
+          <span dir="ltr">Developed by: <strong>ONE Company</strong></span>
+        </div>
         <div class="footer-social">
           @foreach ($socialLinks as $key => $social)
             @if (filled($siteSettings[$key] ?? null))
@@ -930,7 +957,7 @@ body::after{display:none}
         </div>
       </div>
       {{-- Quick links --}}
-      <div class="footer-column">
+      <div>
         <div class="footer-title">{{ $isRtl ? 'روابط سريعة' : 'Quick Links' }}</div>
         <ul class="footer-links">
           <li><a href="{{ route('home') }}"><i class="fa-solid fa-chevron-{{ $isRtl ? 'left' : 'right' }}"></i>{{ __('messages.nav_home') }}</a></li>
@@ -942,7 +969,7 @@ body::after{display:none}
         </ul>
       </div>
       {{-- Categories --}}
-      <div class="footer-column">
+      <div>
         <div class="footer-title">{{ __('messages.all_categories') }}</div>
         <ul class="footer-links">
           @foreach(($footerCategories ?? collect())->take(5) as $footerCategory)
@@ -951,7 +978,7 @@ body::after{display:none}
         </ul>
       </div>
       {{-- Contact info --}}
-      <div class="footer-column">
+      <div>
         <div class="footer-title">{{ __('messages.nav_contact') }}</div>
         <ul class="footer-links">
           <li><a href="mailto:info@alaseelnews.com"><i class="fa-solid fa-envelope"></i>info@alaseelnews.com</a></li>
@@ -962,186 +989,27 @@ body::after{display:none}
         </ul>
       </div>
     </div>
-    <div class="footer-bottom">
-      <div class="footer-copyright">© {{ now()->year }} {{ $siteSettings['site_name'] ?? __('messages.site_name') }} — {{ $isRtl ? 'جميع الحقوق محفوظة' : 'All rights reserved' }}</div>
-      <div class="footer-developer" dir="ltr">
-        <span>Developed by: <strong>ONE Company</strong></span>
-        <img src="{{ asset('images/company/one-logo.png') }}" alt="ONE Company" loading="lazy">
-      </div>
-    </div>
+    <div class="footer-bottom">© {{ now()->year }} {{ $siteSettings['site_name'] ?? __('messages.site_name') }} — {{ $isRtl ? 'جميع الحقوق محفوظة' : 'All rights reserved' }}</div>
   </div>
 </footer>
-<style>
-  /* Automatic, non-destructive watermark for article images. */
-  .watermark-ready .card-img,
-  .watermark-ready .article-card-img,
-  .watermark-ready .category-lead-image,
-  .watermark-ready .category-news-thumb,
-  .watermark-ready .article-main-media,
-  .watermark-ready .article-related-image {
-    position: relative;
-    isolation: isolate;
-  }
 
-  .watermark-ready .card-img::after,
-  .watermark-ready .article-card-img::after,
-  .watermark-ready .category-lead-image::after,
-  .watermark-ready .category-news-thumb::after,
-  .watermark-ready .article-main-media::after,
-  .watermark-ready .article-related-image::after {
-    content: '';
-    position: absolute;
-    top: clamp(8px, 1.2vw, 18px);
-    right: clamp(8px, 1.2vw, 18px);
-    bottom: auto;
-    left: auto;
-    z-index: 8;
-    width: clamp(52px, 9vw, 115px);
-    height: clamp(24px, 4vw, 52px);
-    background-image: var(--article-watermark-url);
-    background-repeat: no-repeat;
-    background-position: right top;
-    background-size: contain;
-    opacity: .78;
-    pointer-events: none;
-    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .65));
-  }
-
-  [dir="ltr"] .watermark-ready .card-img::after,
-  [dir="ltr"] .watermark-ready .article-card-img::after,
-  [dir="ltr"] .watermark-ready .category-lead-image::after,
-  [dir="ltr"] .watermark-ready .category-news-thumb::after,
-  [dir="ltr"] .watermark-ready .article-main-media::after,
-  [dir="ltr"] .watermark-ready .article-related-image::after {
-    right: clamp(8px, 1.2vw, 18px);
-    left: auto;
-    background-position: right top;
-  }
-
-</style>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const logo = document.querySelector('.site-brand img');
-
-    if (!logo?.src) return;
-
-    const escapedLogoUrl = logo.src.replace(/"/g, '\\"');
-    document.documentElement.style.setProperty(
-      '--article-watermark-url',
-      `url("${escapedLogoUrl}")`
-    );
-    document.querySelectorAll('main img:not(.site-watermark):not(.header-ad-image):not(.footer-ad-image)').forEach((image) => {
-      if (image.closest('.home-ad, .sidebar-ad, .article-share-buttons')) return;
-      if (getComputedStyle(image).borderRadius.includes('50%')) return;
-      const host = image.parentElement;
-      if (!host || host.querySelector(':scope > .site-watermark')) return;
-      if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
-      const mark = logo.cloneNode(true);
-      mark.removeAttribute('id');
-      mark.className = 'site-watermark';
-      mark.alt = '';
-      mark.setAttribute('aria-hidden', 'true');
-      host.appendChild(mark);
-    });
-  });
-</script>
-<style>
-.site-watermark{position:absolute!important;z-index:8!important;top:12px!important;right:12px!important;bottom:auto!important;left:auto!important;width:clamp(56px,14%,110px)!important;height:auto!important;max-height:42px!important;object-fit:contain!important;object-position:right top!important;opacity:.72!important;filter:drop-shadow(0 2px 5px rgba(0,0,0,.75));pointer-events:none!important}
-</style>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const breakingItems=[...document.querySelectorAll('.breaking-rotator-item')];
-  if(breakingItems.length>1){
-    let breakingIndex=0;
-    setInterval(()=>{
-      breakingItems[breakingIndex].classList.remove('is-active');
-      breakingItems[breakingIndex].hidden=true;
-      breakingIndex=(breakingIndex+1)%breakingItems.length;
-      breakingItems[breakingIndex].hidden=false;
-      requestAnimationFrame(()=>breakingItems[breakingIndex].classList.add('is-active'));
-    },600000);
-  }
-
-  const revealTargets=[...document.querySelectorAll([
-    'main section',
-    'main .article-card',
-    'main .article-card-featured',
-    'main .sidebar-widget',
-    'main .category-news',
-    'main .content-section',
-    '.newsletter-section',
-    '.site-footer .footer-column'
-  ].join(','))];
-
-  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches&&'IntersectionObserver' in window){
-    document.documentElement.classList.add('reveal-ready');
-    revealTargets.forEach((item,itemIndex)=>{
-      item.dataset.scrollReveal='';
-      item.style.setProperty('--reveal-delay',`${(itemIndex%5)*65}ms`);
-    });
-    const revealObserver=new IntersectionObserver((entries,observer)=>{
-      entries.forEach((entry)=>{
-        if(!entry.isIntersecting)return;
-        entry.target.classList.add('is-revealed');
-        observer.unobserve(entry.target);
-      });
-    },{threshold:.12,rootMargin:'0px 0px -48px 0px'});
-    requestAnimationFrame(()=>revealTargets.forEach((item)=>revealObserver.observe(item)));
-  }else{
-    revealTargets.forEach((item)=>item.classList.add('is-revealed'));
-  }
-
   document.querySelectorAll('[data-ad-flip]').forEach((viewport)=>{
     const cards=[...viewport.querySelectorAll('.ad-flip-card')];
-    if(!cards.length)return;
+    if(cards.length<2)return;
     let index=0;
     const delay=Number(viewport.dataset.interval)||6000;
-    let timer=null;
-
-    const stopAllVideos=(except=null)=>{
-      cards.forEach((card)=>{
-        const video=card.querySelector('[data-ad-video]');
-        if(!video||video===except)return;
-        video.pause();
-        try{video.currentTime=0;}catch(error){}
-      });
-    };
-
-    const scheduleCurrent=()=>{
-      clearTimeout(timer);
+    setInterval(()=>{
       const current=cards[index];
-      const video=current.querySelector('[data-ad-video]');
-      stopAllVideos(video);
-
-      if(video){
-        video.muted=true;
-        try{video.currentTime=0;}catch(error){}
-        video.onended=()=>show((index+1)%cards.length);
-        video.play().catch(()=>{
-          timer=setTimeout(()=>show((index+1)%cards.length),delay);
-        });
-        return;
-      }
-
-      timer=setTimeout(()=>show((index+1)%cards.length),delay);
-    };
-
-    const show=(nextIndex)=>{
-      const current=cards[index];
-      index=nextIndex;
+      index=(index+1)%cards.length;
       const next=cards[index];
-      if(current!==next){
-        current.classList.remove('is-active');
-        current.classList.add('is-leaving');
-      }
+      current.classList.remove('is-active');
+      current.classList.add('is-leaving');
       next.classList.remove('is-leaving');
       next.classList.add('is-active');
-      if(current!==next)setTimeout(()=>current.classList.remove('is-leaving'),750);
-      scheduleCurrent();
-    };
-
-    cards.forEach((card,cardIndex)=>card.classList.toggle('is-active',cardIndex===0));
-    scheduleCurrent();
+      setTimeout(()=>current.classList.remove('is-leaving'),750);
+    },delay);
   });
 
   const target=document.getElementById('header-weather-value');
@@ -1152,6 +1020,153 @@ document.addEventListener('DOMContentLoaded',()=>{
     .catch(()=>{target.textContent='طقس غزة';});
 });
 </script>
+
+@if(isset($globalBreakingAlerts) && $globalBreakingAlerts->isNotEmpty())
+  @php
+    $urgentAlertsPayload = [];
+
+    foreach ($globalBreakingAlerts as $urgentAlert) {
+        $urgentAlertsPayload[] = [
+            'text' => (string) $urgentAlert->text,
+            'link' => $urgentAlert->link ? (string) $urgentAlert->link : null,
+            'expires_at' => $urgentAlert->expires_at
+                ? $urgentAlert->expires_at->toIso8601String()
+                : null,
+        ];
+    }
+  @endphp
+
+  <div class="urgent-flash-wrap" id="urgentFlashWrap">
+    <div class="urgent-flash" id="urgentFlash" role="status" aria-live="polite">
+      <div class="urgent-flash-label">
+        <span class="urgent-flash-dot"></span>
+        <span>عاجل</span>
+      </div>
+
+      <div class="urgent-flash-body" id="urgentFlashBody"></div>
+
+      <button type="button" class="urgent-flash-close" id="urgentFlashClose" aria-label="إغلاق">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+  @php
+    $urgentAlertsJson = json_encode(
+        $urgentAlertsPayload,
+        JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+    );
+  @endphp
+  <script type="application/json" id="urgentAlertsData">{!! $urgentAlertsJson !!}</script>
+@endif
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  // Animate latest updates only when there is enough content to move.
+  const latestWindow=document.querySelector('.latest-updates-window');
+  const latestItems=document.getElementById('latestUpdatesItems');
+  if(latestWindow&&latestItems&&latestItems.scrollWidth>latestWindow.clientWidth){
+    let x=0;
+    let isPaused=false;
+    const direction=document.documentElement.dir==='rtl'?1:-1;
+
+    // Pause the headline under the pointer, then resume from the same position.
+    latestWindow.addEventListener('mouseenter',()=>{isPaused=true;});
+    latestWindow.addEventListener('mouseleave',()=>{isPaused=false;});
+
+    const tick=()=>{
+      if(!isPaused){
+        x+=0.45*direction;
+        const limit=Math.max(0,latestItems.scrollWidth-latestWindow.clientWidth);
+        if(Math.abs(x)>limit+80)x=direction===1?-latestItems.scrollWidth:latestItems.scrollWidth;
+        latestItems.style.transform=`translateX(${x}px)`;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  const dataNode=document.getElementById('urgentAlertsData');
+  const wrap=document.getElementById('urgentFlashWrap');
+  const body=document.getElementById('urgentFlashBody');
+  const close=document.getElementById('urgentFlashClose');
+  if(!dataNode||!wrap||!body)return;
+
+  let alerts=[];
+  try{alerts=JSON.parse(dataNode.textContent||'[]')}catch(e){alerts=[]}
+  let index=0;
+  let timer=null;
+
+  const visible=()=>alerts.filter(a=>{
+    if(!a.expires_at)return true;
+    return new Date(a.expires_at).getTime()>Date.now();
+  });
+
+  const render=()=>{
+    alerts=visible();
+    if(!alerts.length){wrap.remove();return}
+    if(index>=alerts.length)index=0;
+    const alert=alerts[index];
+    body.innerHTML='';
+    const el=document.createElement(alert.link?'a':'span');
+    el.textContent=alert.text||'';
+    if(alert.link){el.href=alert.link;el.rel='noopener noreferrer'}
+    body.appendChild(el);
+    clearTimeout(timer);
+    timer=setTimeout(()=>{index=(index+1)%alerts.length;render()},alerts.length>1?6000:1000);
+  };
+
+  close?.addEventListener('click',()=>{clearTimeout(timer);wrap.remove()});
+  render();
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  /*
+   * Add ONE logo only to article images.
+   * Excludes header/footer logos, ads, widgets and tiny icons.
+   */
+  const logoSrc = @json(route('site.logo', ['v' => $siteSettings['_site_logo_version'] ?? 1]));
+
+  const selectors = [
+    'main .article-detail img',
+    'main .article-content img',
+    'main .article-body img',
+    'main .post-content img',
+    'main .entry-content img',
+    'main .article-card-img img',
+    'main .card-img img'
+  ];
+
+  document.querySelectorAll(selectors.join(',')).forEach((img)=>{
+    if (img.closest('.site-brand,.footer-brand-name,.header-ads,.footer-ads-ticker,.ad-media-shell')) return;
+
+    const install=()=>{
+      if ((img.naturalWidth && img.naturalWidth < 220) || (img.naturalHeight && img.naturalHeight < 140)) return;
+
+      let holder=img.parentElement;
+      if(!holder) return;
+
+      if(holder.querySelector(':scope > .article-logo-watermark')) return;
+
+      holder.classList.add('article-logo-watermark-target');
+
+      const logo=document.createElement('img');
+      logo.src=logoSrc;
+      logo.alt='';
+      logo.setAttribute('aria-hidden','true');
+      logo.className='article-logo-watermark';
+      holder.appendChild(logo);
+    };
+
+    if(img.complete) install();
+    else img.addEventListener('load',install,{once:true});
+  });
+});
+</script>
+
 @stack('scripts')
 </body>
 </html>

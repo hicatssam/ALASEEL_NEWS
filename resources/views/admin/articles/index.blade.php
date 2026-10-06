@@ -178,7 +178,7 @@
                             <div style="font-weight:600;font-size:13px;color:#1a1a2e;line-height:1.4">{{ Str::limit($article->title, 65) }}</div>
                             <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">
                                 <span class="badge badge-secondary" style="font-size:10px">{{ $article->content_type_label }}</span>
-                                @if($article->is_breaking)<span class="badge badge-danger" style="font-size:10px">{{ __('admin.badge_breaking') }}</span>@endif
+                                @if($article->is_breaking)<span class="badge badge-danger" style="font-size:10px">آخر المستجدات</span>@endif
                                 @if($article->is_featured)<span class="badge badge-gold" style="font-size:10px">{{ __('admin.badge_featured') }}</span>@endif
                                 @if($article->is_editor_pick)<span class="badge badge-info" style="font-size:10px">{{ __('admin.badge_editor_pick') }}</span>@endif
                             </div>

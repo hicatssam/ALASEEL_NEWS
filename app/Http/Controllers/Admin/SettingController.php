@@ -361,5 +361,7 @@ class SettingController extends Controller
         foreach ([32, 180, 192, 512] as $size) {
             Storage::disk('public')->delete("settings/icons/site-icon-{$size}.png");
         }
+
+        Storage::disk('public')->deleteDirectory('generated/article-images');
     }
 }

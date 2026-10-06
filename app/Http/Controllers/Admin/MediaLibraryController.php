@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\MediaFile;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 class MediaLibraryController extends Controller
 {
@@ -183,9 +181,9 @@ class MediaLibraryController extends Controller
             "Uploaded file: {$media->file_name}"
         );
 
-       return redirect()
-    ->route('admin.media.index')
-    ->with('success', 'تم رفع الملف إلى مكتبة الوسائط بنجاح.');
+        return redirect()
+            ->route('admin.media.index')
+            ->with('success', 'تم رفع الملف إلى مكتبة الوسائط بنجاح.');
     }
 
     public function update(
@@ -259,6 +257,12 @@ class MediaLibraryController extends Controller
         );
     }
 
+    /**
+     * تجهيز بيانات الوسائط للـ picker.
+     *
+     * مهم: نستخدم URL الموحّد الموجود في MediaFile model،
+     * والذي يمر عبر route('site.media') ولا يعتمد على public/storage.
+     */
     private function formatMedia(MediaFile $media): array
     {
         return [
@@ -271,24 +275,26 @@ class MediaLibraryController extends Controller
             'folder' => $media->folder,
             'alt_text' => $media->alt_text,
             'caption' => $media->caption,
-            'url' => Storage::disk('public')->url(
-                $media->file_path
-            ),
+            'url' => $media->url,
         ];
     }
 
-
-
     public function editorUpload(Request $request)
-{
-    $request->validate([
-        'upload' => 'required|image|max:5120', // 5MB
-    ]);
+    {
+        $request->validate([
+            'upload' => 'required|image|max:5120',
+        ]);
 
-    $path = $request->file('upload')->store('articles', 'public');
+        $path = $request->file('upload')->store('articles', 'public');
 
-    return response()->json([
-        'url' => Storage::url($path),
-    ]);
-}
+        /*
+         * editorUpload لا ينشئ MediaFile، لذلك نبني رابط site.media
+         * مباشرة بدل الاعتماد على /storage والـ symlink.
+         */
+        return response()->json([
+            'url' => route('site.media', [
+                'path' => ltrim($path, '/'),
+            ]),
+        ]);
+    }
 }

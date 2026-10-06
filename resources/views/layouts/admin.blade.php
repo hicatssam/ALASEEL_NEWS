@@ -154,10 +154,47 @@ html[dir="rtl"] .alert-info{background:#d1ecf1;color:#0c5460;border-right:4px so
 html[dir="ltr"] .alert-info{background:#d1ecf1;color:#0c5460;border-left:4px solid #17a2b8}
 
 /* Pagination */
-.pagination{display:flex;gap:4px;justify-content:center;margin-top:20px;flex-wrap:wrap}
-.pagination a,.pagination span{padding:6px 12px;border-radius:6px;text-decoration:none;font-size:13px;border:1px solid #dee2e6;color:#555;background:#fff;display:flex;align-items:center;justify-content:center}
+.pagination{display:flex;align-items:center;justify-content:center;gap:5px;margin:20px 0 0;padding:0;flex-wrap:wrap;list-style:none}
+.pagination li{list-style:none;margin:0;padding:0}
+.pagination a,.pagination span{min-width:36px;height:36px;padding:0 10px;border-radius:7px;text-decoration:none;font-size:13px;border:1px solid #dee2e6;color:#555;background:#fff;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 .pagination a:hover{background:#f0f2f5;border-color:var(--gold);color:var(--gold-dark)}
 .pagination .active span,.pagination span.active{background:var(--gold);border-color:var(--gold);color:var(--dark);font-weight:700}
+
+/* Laravel pagination SVG arrows fix */
+.pagination svg,
+nav[role="navigation"] svg{
+  width:18px!important;
+  height:18px!important;
+  min-width:18px!important;
+  min-height:18px!important;
+  max-width:18px!important;
+  max-height:18px!important;
+  display:block!important;
+  flex:none!important
+}
+nav[role="navigation"]{width:100%}
+nav[role="navigation"]>div{max-width:100%}
+nav[role="navigation"] a,
+nav[role="navigation"] span{box-sizing:border-box}
+nav[role="navigation"] a svg,
+nav[role="navigation"] span svg,
+.pagination a svg,
+.pagination span svg{width:18px!important;height:18px!important}
+html[dir="rtl"] .pagination{direction:rtl}
+
+@media(max-width:560px){
+  .pagination{gap:3px}
+  .pagination a,.pagination span{min-width:32px;height:32px;padding:0 8px;font-size:12px}
+  .pagination svg,
+  nav[role="navigation"] svg{
+    width:16px!important;
+    height:16px!important;
+    min-width:16px!important;
+    min-height:16px!important;
+    max-width:16px!important;
+    max-height:16px!important
+  }
+}
 
 /* Filter bar */
 .filter-bar{background:#fff;border-radius:10px;padding:16px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,.06);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -332,6 +369,12 @@ html[dir="ltr"] .sidebar-close{right:10px}
     <a href="{{ route('admin.articles.create') }}" class="nav-item {{ request()->routeIs('admin.articles.create') ? 'active' : '' }}">
       <i class="fa-solid fa-square-plus"></i> إضافة محتوى
     </a>
+
+    @if($isSuperAdmin || $isEditor)
+    <a href="{{ route('admin.breaking-alerts.index') }}" class="nav-item {{ request()->routeIs('admin.breaking-alerts.*') ? 'active' : '' }}">
+      <i class="fa-solid fa-bolt"></i> الأخبار العاجلة
+    </a>
+    @endif
 
     {{-- Categories: super-admin & editor only --}}
     @if($isSuperAdmin || $isEditor)

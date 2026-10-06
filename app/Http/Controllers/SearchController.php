@@ -19,6 +19,7 @@ class SearchController extends Controller
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
             'sort' => ['nullable', 'in:newest,oldest,most_viewed'],
+            'featured' => ['nullable', 'boolean'],
         ]);
 
         $q = trim($filters['q'] ?? '');
@@ -26,7 +27,13 @@ class SearchController extends Controller
         $dateFrom = $filters['date_from'] ?? null;
         $dateTo = $filters['date_to'] ?? null;
         $sort = $filters['sort'] ?? 'newest';
-        $hasSearch = $q !== '' || $categoryId || $dateFrom || $dateTo;
+        $featured = (bool) ($filters['featured'] ?? false);
+        $hasSearch = $q !== ''
+            || $categoryId
+            || $dateFrom
+            || $dateTo
+            || $featured
+            || $request->has('sort');
 
         $articlesQuery = Article::published()
             ->with(['category', 'journalist'])
@@ -36,6 +43,7 @@ class SearchController extends Controller
                     ->orWhere('content', 'like', "%{$q}%");
             }))
             ->when($categoryId, fn ($query) => $query->where('category_id', $categoryId))
+            ->when($featured, fn ($query) => $query->where('is_featured', true))
             ->when($dateFrom, fn ($query) => $query->whereDate('published_at', '>=', $dateFrom))
             ->when($dateTo, fn ($query) => $query->whereDate('published_at', '<=', $dateTo));
 

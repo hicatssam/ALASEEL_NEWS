@@ -6,7 +6,7 @@
     <div class="card" style="margin-bottom:16px">
       <div class="card-body">
         <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-          @if($article->is_breaking)<span class="badge badge-danger">🔴 {{ __('admin.badge_breaking') }}</span>@endif
+          @if($article->is_breaking)<span class="badge badge-danger">🔴 آخر المستجدات</span>@endif
           @if($article->is_featured)<span class="badge badge-gold">⭐ {{ __('admin.badge_featured') }}</span>@endif
           @if($article->is_editor_pick)<span class="badge badge-info">✏️ {{ __('admin.badge_editor_pick') }}</span>@endif
         </div>

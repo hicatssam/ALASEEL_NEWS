@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Models\Advertisement;
 use App\Models\Article;
+use App\Models\BreakingAlert;
 use App\Models\Category;
 use App\Models\LiveStream;
 use App\Models\Notification;
 use App\Models\Setting;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -23,28 +25,35 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
+        Paginator::useBootstrapFive();
+
         /*
         |--------------------------------------------------------------------------
         | إعدادات الموقع
         |--------------------------------------------------------------------------
-        |
-        | مشاركة إعدادات الموقع مع جميع الواجهات، حتى تكون متاحة داخل
-        | الصفحات التي تستخدم layouts.app.
-        |
         */
 
         View::composer('*', function ($view) {
             $locale = app()->getLocale();
+
             $siteSettings = cache()->remember(
                 'site_settings_'.$locale,
                 300,
                 function () {
-                    return Setting::query()
-                        ->get()
+                    $settings = Setting::query()->get();
+
+                    $values = $settings
                         ->mapWithKeys(fn (Setting $setting) => [
                             $setting->key => $setting->value,
                         ])
                         ->toArray();
+
+                    $values['_site_logo_version'] = $settings
+                        ->firstWhere('key', 'site_logo')
+                        ?->updated_at
+                        ?->timestamp ?? 1;
+
+                    return $values;
                 }
             );
 
@@ -58,6 +67,13 @@ class AppServiceProvider extends ServiceProvider
         */
 
         View::composer('layouts.app', function ($view) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | أقسام الهيدر
+            |--------------------------------------------------------------------------
+            */
+
             $navCategories = Category::query()
                 ->active()
                 ->root()
@@ -74,31 +90,69 @@ class AppServiceProvider extends ServiceProvider
                 ->orderBy('name')
                 ->get();
 
+            /*
+            |--------------------------------------------------------------------------
+            | أقسام الفوتر
+            |--------------------------------------------------------------------------
+            */
+
             $footerCategories = Category::query()
                 ->forFooter()
                 ->limit(10)
                 ->get();
 
+            /*
+            |--------------------------------------------------------------------------
+            | البث المباشر
+            |--------------------------------------------------------------------------
+            */
+
             $activeStream = LiveStream::active();
 
-            $globalBreakingNews = Article::breaking()
-                ->where(function ($query) {
-                    $query->whereNull('published_at')
-                        ->orWhere('published_at', '<=', now());
-                })
+            /*
+            |--------------------------------------------------------------------------
+            | آخر المستجدات
+            |--------------------------------------------------------------------------
+            |
+            | آخر الأخبار المنشورة في الموقع.
+            | لا تعتمد على is_breaking.
+            |
+            */
+
+            $globalLatestUpdates = Article::query()
+                ->published()
+                ->with([
+                    'category',
+                    'journalist',
+                    'mainImageMedia',
+                    'translations',
+                ])
                 ->latest('published_at')
-                ->limit(5)
+                ->limit(12)
                 ->get();
 
             /*
             |--------------------------------------------------------------------------
-            | إعلانات المواضع المشتركة
+            | الأخبار العاجلة
             |--------------------------------------------------------------------------
             |
-            | header: أعلى صفحات الموقع
-            | footer: أسفل صفحات الموقع
-            | popup: نافذة منبثقة
+            | visible() يتحقق من:
+            | is_active
+            | starts_at
+            | expires_at
             |
+            */
+
+            $globalBreakingAlerts = BreakingAlert::query()
+                ->visible()
+                ->latest('starts_at')
+                ->limit(10)
+                ->get();
+
+            /*
+            |--------------------------------------------------------------------------
+            | الإعلانات المشتركة
+            |--------------------------------------------------------------------------
             */
 
             $layoutAds = Advertisement::query()
@@ -127,20 +181,32 @@ class AppServiceProvider extends ServiceProvider
                 collect()
             );
 
+            /*
+            |--------------------------------------------------------------------------
+            | إرسال البيانات للـ Layout
+            |--------------------------------------------------------------------------
+            */
+
             $view->with(compact(
                 'navCategories',
                 'footerCategories',
                 'activeStream',
-                'globalBreakingNews',
+                'globalLatestUpdates',
+                'globalBreakingAlerts',
                 'headerAds',
                 'footerAds',
                 'popupAds'
             ));
         });
 
-
+        /*
+        |--------------------------------------------------------------------------
+        | بيانات لوحة الإدارة
+        |--------------------------------------------------------------------------
+        */
 
         View::composer('layouts.admin', function ($view) {
+
             $adminUnreadCount = Notification::query()
                 ->whereNull('read_at')
                 ->count();
@@ -148,7 +214,6 @@ class AppServiceProvider extends ServiceProvider
             $adminRecentNotifications = Notification::query()
                 ->latest()
                 ->limit(8)
-
                 ->get();
 
             $view->with(compact(

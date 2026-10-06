@@ -47,7 +47,7 @@
         <a class="article-card-img" href="{{ route('articles.show', $article->slug) }}">
           @include('partials.article-image', ['article' => $article])
         </a>
-        <div class="article-card-body"><div class="article-cat">{{ $article->category?->name }}</div><div class="article-title"><a href="{{ route('articles.show', $article->slug) }}">{{ Str::limit($article->title, 90) }}</a></div><div class="article-meta"><span><i class="fa-solid fa-clock"></i>{{ $article->published_at?->diffForHumans() }}</span><span><i class="fa-solid fa-eye"></i>{{ number_format($article->views) }}</span></div></div>
+        <div class="article-card-body"><div class="article-cat">{{ $article->category?->name }}</div><div class="article-title"><a href="{{ route('articles.show', $article->slug) }}">{{ Str::limit($article->title, 90) }}</a></div><div class="article-meta"><span><i class="fa-solid fa-clock"></i>{{ $article->published_at?->diffForHumans() }}</span></div></div>
       </article>
       @endforeach
     </div>

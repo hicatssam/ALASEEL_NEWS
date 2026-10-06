@@ -28,7 +28,7 @@
     </div>
     <div>
       <div class="stat-value">{{ $stats['breaking_news'] }}</div>
-      <div class="stat-label">أخبار عاجلة</div>
+      <div class="stat-label">آخر المستجدات</div>
     </div>
   </div>
   <div class="stat-card" style="border-color:#3498db">
@@ -121,7 +121,7 @@
               <a href="{{ route('admin.articles.show',$a) }}" style="color:#1a1a2e;text-decoration:none;font-weight:600;font-size:13px">
                 {{ Str::limit($a->title,55) }}
               </a>
-              @if($a->is_breaking)<span class="badge badge-danger" style="font-size:10px;margin-right:4px">عاجل</span>@endif
+              @if($a->is_breaking)<span class="badge badge-danger" style="font-size:10px;margin-right:4px">آخر المستجدات</span>@endif
             </td>
             <td><span class="badge badge-info">{{ $a->category?->name ?? '—' }}</span></td>
             <td style="font-weight:700">{{ number_format($a->views) }}</td>

@@ -34,6 +34,7 @@ use App\Http\Controllers\Admin\LiveStreamController as AdminLiveStreamController
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\BreakingAlertController;
  
 
  
@@ -53,12 +54,17 @@ Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages'])->name('sit
 Route::get('/sitemap-articles.xml', [SitemapController::class, 'articles'])->name('sitemap.articles');
 Route::get('/sitemap-news.xml', [SitemapController::class, 'news'])->name('sitemap.news');
 Route::get('/site-logo', [SiteAssetController::class, 'logo'])->name('site.logo');
-Route::get('/site-icon/{size}.png', [SiteAssetController::class, 'icon'])
+// بدون امتداد ثابت حتى لا يعترض Nginx الأيقونة الديناميكية كملف PNG مفقود.
+Route::get('/site-icon/{size}', [SiteAssetController::class, 'icon'])
     ->whereIn('size', ['32', '180', '192', '512'])
     ->name('site.icon');
 Route::get('/site-manifest.webmanifest', [SiteAssetController::class, 'manifest'])
     ->name('site.manifest');
 Route::get('/site-media', [SiteAssetController::class, 'media'])->name('site.media');
+// بدون امتداد ثابت حتى لا يعترض Nginx الطلب باعتباره ملف صورة مفقودًا.
+Route::get('/article-media/{article}', [SiteAssetController::class, 'articleImage'])
+    ->whereNumber('article')
+    ->name('site.article-image');
 
  
 Route::get('/language/{locale}', function (string $locale) {
@@ -113,7 +119,7 @@ Route::get('/article/{slug}', [ArticleController::class, 'show'])
     ->name('articles.show');
 
 Route::get('/content/{type}', [HomeController::class, 'content'])
-    ->whereIn('type', ['article', 'story', 'report', 'opinion'])
+    ->whereIn('type', ['article', 'story', 'report', 'opinions-articles'])
     ->name('content.index');
 
 
@@ -227,7 +233,10 @@ Route::resource('team-members', TeamMemberController::class)
  
         Route::middleware('role:editor,super-admin')
             ->group(function () {
- 
+
+                Route::resource('breaking-alerts', BreakingAlertController::class)
+                    ->only(['index', 'store', 'update', 'destroy']);
+
                 Route::resource(
                     'categories',
                     AdminCategoryController::class

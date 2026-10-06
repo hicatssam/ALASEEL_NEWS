@@ -9,6 +9,7 @@ use App\Models\ArticleView;
 use App\Models\ArticleRevision;
 use App\Models\Category;
 use App\Models\Journalist;
+use App\Models\MediaFile;
 use App\Models\Notification;
 use App\Models\Tag;
 use Illuminate\Http\Request;
@@ -280,40 +281,36 @@ class ArticleController extends Controller
         );
 
         $uploadedImage = null;
+        $createdMedia = null;
 
         try {
             $selectedTagIds = $request->input('tags', []);
             $newTagNames = (string) $request->input('new_tags', '');
 
-           if (! empty($data['main_image_media_id'])) {
-    $data['main_image'] = null;
-} elseif ($request->hasFile('main_image_file')) {
-    $file = $request->file('main_image_file');
+            // الملف المرفوع حديثًا له الأولوية على قيمة مكتبة الوسائط المخفية.
+            if ($request->hasFile('main_image_file')) {
+                $file = $request->file('main_image_file');
+                $uploadedImage = $file->store('media/articles', 'public');
 
-    $uploadedImage = $file->store(
-        'media/articles',
-        'public'
-    );
+                $createdMedia = MediaFile::create([
+                    'user_id' => auth()->id(),
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $uploadedImage,
+                    'file_type' => 'image',
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                    'folder' => 'articles',
+                    'alt_text' => $data['title'],
+                ]);
 
-    $media = \App\Models\MediaFile::create([
-        'user_id' => auth()->id(),
-        'file_name' => $file->getClientOriginalName(),
-        'file_path' => $uploadedImage,
-        'file_type' => 'image',
-        'mime_type' => $file->getMimeType(),
-        'size' => $file->getSize(),
-        'folder' => 'articles',
-        'alt_text' => $data['title'],
-    ]);
-
-    $data['main_image_media_id'] = $media->id;
-    $data['main_image'] = null;
-} else {
-    $data['main_image'] =
-        $data['main_image_url'] ?? null;
-
-    $data['main_image_media_id'] = null;
-}
+                $data['main_image_media_id'] = $createdMedia->id;
+                $data['main_image'] = null;
+            } elseif (! empty($data['main_image_media_id'])) {
+                $data['main_image'] = null;
+            } else {
+                $data['main_image'] = $data['main_image_url'] ?? null;
+                $data['main_image_media_id'] = null;
+            }
             unset(
                 $data['main_image_file'],
                 $data['main_image_url'],
@@ -385,6 +382,10 @@ class ArticleController extends Controller
         } catch (\Throwable $exception) {
             if ($uploadedImage) {
                 Storage::disk('public')->delete($uploadedImage);
+            }
+
+            if ($createdMedia?->exists) {
+                $createdMedia->forceDelete();
             }
 
             throw $exception;
@@ -542,29 +543,46 @@ public function show(Request $request, string $slug)
             $data['journalist_id'] ?? null
         );
 
-        $oldImage = $article->main_image;
+        $oldImage = $article->getRawOriginal('main_image');
         $newUploadedImage = null;
+        $newMedia = null;
         $deleteOldImageAfterUpdate = false;
 
         try {
             if ($request->hasFile('main_image_file')) {
-                $newUploadedImage = $request
-                    ->file('main_image_file')
-                    ->store('articles', 'public');
+                $file = $request->file('main_image_file');
+                $newUploadedImage = $file->store('media/articles', 'public');
+                $newMedia = MediaFile::create([
+                    'user_id' => auth()->id(),
+                    'file_name' => $file->getClientOriginalName(),
+                    'file_path' => $newUploadedImage,
+                    'file_type' => 'image',
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize(),
+                    'folder' => 'articles',
+                    'alt_text' => $data['title'],
+                ]);
 
-                $data['main_image'] = $newUploadedImage;
+                $data['main_image_media_id'] = $newMedia->id;
+                $data['main_image'] = null;
+                $deleteOldImageAfterUpdate = true;
+            } elseif ($request->boolean('remove_main_image')) {
+                $data['main_image'] = null;
+                $data['main_image_media_id'] = null;
                 $deleteOldImageAfterUpdate = true;
             } elseif (! empty($data['main_image_url'])) {
                 $data['main_image'] = $data['main_image_url'];
+                $data['main_image_media_id'] = null;
 
                 if ($data['main_image'] !== $oldImage) {
                     $deleteOldImageAfterUpdate = true;
                 }
-            } elseif ($request->boolean('remove_main_image')) {
+            } elseif (! empty($data['main_image_media_id'])) {
                 $data['main_image'] = null;
-                $deleteOldImageAfterUpdate = true;
+                $deleteOldImageAfterUpdate = filled($oldImage);
             } else {
                 $data['main_image'] = $oldImage;
+                $data['main_image_media_id'] = $article->main_image_media_id;
             }
 
             $revisionNote = $data['revision_note'] ?? null;
@@ -658,6 +676,10 @@ public function show(Request $request, string $slug)
                 Storage::disk('public')->delete(
                     $newUploadedImage
                 );
+            }
+
+            if ($newMedia?->exists) {
+                $newMedia->forceDelete();
             }
 
             throw $exception;
@@ -959,39 +981,6 @@ public function show(Request $request, string $slug)
 
         return (string) $status;
     }
-
-
-
-    public function getMainImageUrlAttribute(): ?string
-{
-    // الصورة المختارة من مكتبة الوسائط
-    if ($this->mainImageMedia?->file_path) {
-        return Storage::disk('public')->url(
-            $this->mainImageMedia->file_path
-        );
-    }
-
-    // لا توجد صورة
-    if (blank($this->main_image)) {
-        return null;
-    }
-
-    // رابط خارجي
-    if (filter_var($this->main_image, FILTER_VALIDATE_URL)) {
-        return $this->main_image;
-    }
-
-    // منع تكرار storage داخل الرابط
-    $path = ltrim($this->main_image, '/');
-
-    if (str_starts_with($path, 'storage/')) {
-        $path = substr($path, strlen('storage/'));
-    }
-
-    return Storage::disk('public')->url($path);
-}
-
-
 public function uploadContentImage(Request $request)
 {
     /*

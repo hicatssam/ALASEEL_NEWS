@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Advertisement;
 use App\Models\Article;
+use App\Models\Category;
 use App\Models\NewsletterSubscriber;
 use App\Models\Notification;
 use App\Models\Video;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class HomeController extends Controller
 {
@@ -15,34 +17,77 @@ class HomeController extends Controller
     {
         $articleRelations = ['category', 'journalist', 'mainImageMedia'];
 
-        $breakingNews = Article::breaking()
-            ->with($articleRelations)
-            ->latest('published_at')
-            ->limit(5)
-            ->get();
-
         $latestUpdates = Article::published()
             ->with($articleRelations)
             ->latest('published_at')
             ->limit(8)
             ->get();
 
-        $articlesContent = Article::published()->ofType('article')->with($articleRelations)->latest('published_at')->limit(4)->get();
-        $stories = Article::published()->ofType('story')->with($articleRelations)->latest('published_at')->limit(4)->get();
-        $reports = Article::published()->ofType('report')->with($articleRelations)->latest('published_at')->limit(4)->get();
+        $articlesContent = Article::published()->ofType('article')->with($articleRelations)->latest('published_at')->limit(5)->get();
+        $stories = Article::published()->ofType('story')->with($articleRelations)->latest('published_at')->limit(5)->get();
+        $articlesAndStories = Article::published()
+            ->whereIn('content_type', ['article', 'story'])
+            ->with($articleRelations)
+            ->latest('published_at')
+            ->limit(5)
+            ->get();
+        $reports = Article::published()->ofType('report')->with($articleRelations)->latest('published_at')->limit(5)->get();
         $opinions = Article::published()->ofType('opinion')->with($articleRelations)->latest('published_at')->limit(6)->get();
-
-        $featuredArticles = Article::featured()
+        $opinionAndArticles = Article::published()
+            ->whereIn('content_type', ['opinion', 'article'])
             ->with($articleRelations)
             ->latest('published_at')
             ->limit(6)
             ->get();
 
-        $latestArticles = Article::published()
+        $featuredArticles = Article::featured()
             ->with($articleRelations)
             ->latest('published_at')
-            ->limit(12)
+            ->limit(5)
             ->get();
+
+        $latestArticles = Article::published()
+            ->whereNotIn('id', $featuredArticles->pluck('id'))
+            ->with($articleRelations)
+            ->latest('published_at')
+            ->limit(5)
+            ->get();
+
+        $categorySections = Category::query()
+            ->active()
+            ->root()
+            ->whereHas('articles', fn ($query) => $query->published())
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->sortBy(function (Category $category): int {
+                $name = Str::lower($category->name.' '.$category->slug);
+
+                return Str::contains($name, ['محلي', 'local']) ? 0 : 1;
+            })
+            ->values()
+            ->map(function (Category $category) use ($articleRelations): Category {
+                $category->setRelation(
+                    'articles',
+                    Article::published()
+                        ->where('category_id', $category->id)
+                        ->with($articleRelations)
+                        ->latest('published_at')
+                        ->limit(5)
+                        ->get()
+                );
+
+                return $category;
+            });
+
+        $localCategorySection = $categorySections->first(function (Category $category): bool {
+            $name = Str::lower($category->name.' '.$category->slug);
+
+            return Str::contains($name, ['محلي', 'local']);
+        });
+        $remainingCategorySections = $categorySections
+            ->reject(fn (Category $category): bool => $localCategorySection?->is($category) ?? false)
+            ->values();
 
         $editorPicks = Article::editorPick()
             ->with($articleRelations)
@@ -83,14 +128,17 @@ class HomeController extends Controller
             ->get();
 
         return view('home', compact(
-            'breakingNews',
             'latestUpdates',
             'articlesContent',
             'stories',
+            'articlesAndStories',
             'reports',
             'opinions',
+            'opinionAndArticles',
             'featuredArticles',
             'latestArticles',
+            'localCategorySection',
+            'remainingCategorySections',
             'editorPicks',
             'trendingArticles',
             'featuredVideos',
@@ -101,18 +149,41 @@ class HomeController extends Controller
 
     public function content(string $type)
     {
-        abort_unless(array_key_exists($type, Article::contentTypes()) && $type !== 'news', 404);
+        $isArticlesAndStories = $type === 'articles-stories';
+        $isOpinionsAndArticles = $type === 'opinions-articles';
 
-        $articles = Article::published()
-            ->ofType($type)
+        abort_unless(
+            $isArticlesAndStories
+                || $isOpinionsAndArticles
+                || (array_key_exists($type, Article::contentTypes()) && $type !== 'news'),
+            404
+        );
+
+        $articlesQuery = Article::published();
+
+        if ($isArticlesAndStories) {
+            $articlesQuery->whereIn('content_type', ['article', 'story']);
+        } elseif ($isOpinionsAndArticles) {
+            $articlesQuery->whereIn('content_type', ['opinion', 'article']);
+        } else {
+            $articlesQuery->ofType($type);
+        }
+
+        $articles = $articlesQuery
             ->with(['category', 'journalist', 'mainImageMedia'])
             ->latest('published_at')
             ->paginate(12);
 
+        $typeLabel = match (true) {
+            $isArticlesAndStories => 'المقالات والقصص',
+            $isOpinionsAndArticles => 'الآراء والمقالات',
+            default => Article::contentTypes()[$type],
+        };
+
         return view('content.index', [
             'articles' => $articles,
             'type' => $type,
-            'typeLabel' => Article::contentTypes()[$type],
+            'typeLabel' => $typeLabel,
         ]);
     }
 
