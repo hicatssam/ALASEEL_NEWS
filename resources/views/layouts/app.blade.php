@@ -1020,7 +1020,9 @@ html[dir="ltr"] .article-logo-watermark{right:auto;left:14px}
 </footer>
 
 @if(isset($popupAds) && $popupAds->isNotEmpty())
-  @php($popupAd = $popupAds->first())
+  @php
+    $popupAd = $popupAds->first();
+  @endphp
   <div class="ad-popup-backdrop" id="siteAdPopup" hidden>
     <div class="ad-popup-dialog" role="dialog" aria-modal="true" aria-label="إعلان: {{ $popupAd->title }}">
       <button type="button" class="ad-popup-close" data-close-ad-popup aria-label="إغلاق الإعلان"><i class="fa-solid fa-times"></i></button>
