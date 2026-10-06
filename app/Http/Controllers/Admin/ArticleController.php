@@ -91,6 +91,10 @@ class ArticleController extends Controller
                 'nullable',
                 Rule::exists('journalists', 'id'),
             ],
+
+            'content_owner_name' => ['nullable', 'required_if:content_type,story,opinion', 'string', 'max:255'],
+            'content_owner_photo_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'remove_content_owner_photo' => ['nullable', 'boolean'],
             
 
             'main_image_media_id' => [
@@ -281,11 +285,22 @@ class ArticleController extends Controller
         );
 
         $uploadedImage = null;
+        $uploadedOwnerPhoto = null;
         $createdMedia = null;
 
         try {
             $selectedTagIds = $request->input('tags', []);
             $newTagNames = (string) $request->input('new_tags', '');
+
+            if (in_array($data['content_type'], ['story', 'opinion'], true)) {
+                if ($request->hasFile('content_owner_photo_file')) {
+                    $uploadedOwnerPhoto = $request->file('content_owner_photo_file')->store('media/content-owners', 'public');
+                    $data['content_owner_photo'] = $uploadedOwnerPhoto;
+                }
+            } else {
+                $data['content_owner_name'] = null;
+                $data['content_owner_photo'] = null;
+            }
 
             // الملف المرفوع حديثًا له الأولوية على قيمة مكتبة الوسائط المخفية.
             if ($request->hasFile('main_image_file')) {
@@ -314,6 +329,8 @@ class ArticleController extends Controller
             unset(
                 $data['main_image_file'],
                 $data['main_image_url'],
+                $data['content_owner_photo_file'],
+                $data['remove_content_owner_photo'],
                 $data['tags'],
                 $data['new_tags']
             );
@@ -382,6 +399,10 @@ class ArticleController extends Controller
         } catch (\Throwable $exception) {
             if ($uploadedImage) {
                 Storage::disk('public')->delete($uploadedImage);
+            }
+
+            if ($uploadedOwnerPhoto) {
+                Storage::disk('public')->delete($uploadedOwnerPhoto);
             }
 
             if ($createdMedia?->exists) {
@@ -544,11 +565,30 @@ public function show(Request $request, string $slug)
         );
 
         $oldImage = $article->getRawOriginal('main_image');
+        $oldOwnerPhoto = $article->getRawOriginal('content_owner_photo');
         $newUploadedImage = null;
+        $newUploadedOwnerPhoto = null;
         $newMedia = null;
         $deleteOldImageAfterUpdate = false;
+        $deleteOldOwnerPhotoAfterUpdate = false;
 
         try {
+            if (in_array($data['content_type'], ['story', 'opinion'], true)) {
+                if ($request->hasFile('content_owner_photo_file')) {
+                    $newUploadedOwnerPhoto = $request->file('content_owner_photo_file')->store('media/content-owners', 'public');
+                    $data['content_owner_photo'] = $newUploadedOwnerPhoto;
+                    $deleteOldOwnerPhotoAfterUpdate = filled($oldOwnerPhoto);
+                } elseif ($request->boolean('remove_content_owner_photo')) {
+                    $data['content_owner_photo'] = null;
+                    $deleteOldOwnerPhotoAfterUpdate = filled($oldOwnerPhoto);
+                } else {
+                    $data['content_owner_photo'] = $oldOwnerPhoto;
+                }
+            } else {
+                $data['content_owner_name'] = null;
+                $data['content_owner_photo'] = null;
+                $deleteOldOwnerPhotoAfterUpdate = filled($oldOwnerPhoto);
+            }
             if ($request->hasFile('main_image_file')) {
                 $file = $request->file('main_image_file');
                 $newUploadedImage = $file->store('media/articles', 'public');
@@ -592,6 +632,8 @@ public function show(Request $request, string $slug)
             unset(
                 $data['main_image_file'],
                 $data['main_image_url'],
+                $data['content_owner_photo_file'],
+                $data['remove_content_owner_photo'],
                 $data['remove_main_image'],
                 $data['revision_note'],
                 $data['tags'],
@@ -668,6 +710,10 @@ public function show(Request $request, string $slug)
                 $this->deleteLocalImage($oldImage);
             }
 
+            if ($deleteOldOwnerPhotoAfterUpdate) {
+                $this->deleteLocalImage($oldOwnerPhoto);
+            }
+
             return redirect()
                 ->route('admin.articles.index')
                 ->with('success', 'تم تحديث المقال بنجاح.');
@@ -676,6 +722,10 @@ public function show(Request $request, string $slug)
                 Storage::disk('public')->delete(
                     $newUploadedImage
                 );
+            }
+
+            if ($newUploadedOwnerPhoto) {
+                Storage::disk('public')->delete($newUploadedOwnerPhoto);
             }
 
             if ($newMedia?->exists) {
