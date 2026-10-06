@@ -57,8 +57,18 @@ class MediaFile extends Model
 
     public function getUrlAttribute(): string
     {
+        if (filter_var($this->file_path, FILTER_VALIDATE_URL)) {
+            return $this->file_path;
+        }
+
+        $path = str_replace('\\\\', '/', trim((string) $this->file_path));
+        $path = preg_replace('#^/?storage/app/public/#', '', $path);
+        $path = preg_replace('#^/?public/storage/#', '', $path);
+        $path = preg_replace('#^/?storage/#', '', $path);
+        $path = preg_replace('#^/?public/#', '', $path);
+
         return route('site.media', [
-            'path' => ltrim($this->file_path, '/'),
+            'path' => ltrim((string) $path, '/'),
         ]);
     }
 
