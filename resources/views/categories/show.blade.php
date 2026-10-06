@@ -139,6 +139,14 @@
 
             {{-- قائمة التصنيفات --}}
             <aside>
+                @if(isset($globalSidebarAds) && $globalSidebarAds->isNotEmpty())
+                    <div class="article-sidebar-ads" aria-label="إعلانات">
+                        @foreach($globalSidebarAds as $ad)
+                            @include('partials.ad-unit', ['ad' => $ad, 'class' => 'article-sidebar-ad'])
+                        @endforeach
+                    </div>
+                @endif
+
                 <div class="sidebar-widget categories-widget">
                     <div class="widget-header">
                         <span class="widget-title">

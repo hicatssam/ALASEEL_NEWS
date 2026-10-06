@@ -600,7 +600,7 @@ body::after{display:none}
 .ad-flip-card.is-leaving{opacity:0;transform:rotateY(90deg) scale(.96);z-index:1}
 .ad-media-shell{position:relative;display:block;width:100%;height:100%;overflow:hidden;background:#111}
 .ad-media-backdrop{position:absolute;z-index:0;inset:-16px;width:calc(100% + 32px);height:calc(100% + 32px);object-fit:cover;filter:blur(18px) brightness(.48) saturate(1.15);transform:scale(1.08);opacity:.9}
-.header-ad-image,.footer-ad-image{position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:cover;object-position:center;background:transparent;padding:0}
+.header-ad-image,.footer-ad-image{position:relative;z-index:1;display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:transparent;padding:0}
 .ad-flip-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;color:rgba(255,255,255,.78);font-size:15px;font-weight:800;background:radial-gradient(circle at 50% 20%,rgba(200,154,43,.2),transparent 58%),#111}
 .site-ad-unit{overflow:hidden;border:1px solid var(--border);border-radius:12px;background:#111}
 .site-ad-unit>a{display:block;color:inherit;width:100%;height:100%}
@@ -608,9 +608,11 @@ body::after{display:none}
 .site-ad-fallback{min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:18px;text-align:center;background:radial-gradient(circle,rgba(200,154,43,.16),transparent 70%)}
 .site-ad-fallback small{color:var(--gold)}
 .article-inside-ads{display:grid;gap:14px;margin:0 0 28px}
-.article-inside-ad{width:100%;aspect-ratio:16/5}
+.article-inside-ad{width:100%;aspect-ratio:97/25}
 .article-sidebar-ads{display:grid;gap:14px;margin-top:16px}
-.article-sidebar-ad{width:100%;aspect-ratio:4/3}
+.article-sidebar-ad{width:100%;aspect-ratio:6/5}
+.global-page-ads{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px;width:min(100% - 32px,970px);margin:28px auto}
+.global-page-ad{width:100%;aspect-ratio:97/25}
 .ad-popup-backdrop{position:fixed;inset:0;z-index:10050;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.78);backdrop-filter:blur(4px)}
 .ad-popup-dialog{position:relative;width:min(92vw,720px);max-height:88vh}
 .ad-popup-dialog .site-ad-unit{width:100%;max-height:82vh;aspect-ratio:16/9}
@@ -619,7 +621,7 @@ body::after{display:none}
 .developer-credit{display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap;margin-top:10px;color:rgba(255,255,255,.62);font-size:10.5px}
 .developer-credit img{width:auto;height:28px;max-width:88px;object-fit:contain;background:#fff;border-radius:5px;padding:3px 6px}
 .developer-credit strong{color:var(--gold)}
-@media(max-width:640px){.site-brand img{max-width:135px!important;max-height:48px!important}.site-brand-name{font-size:12px;white-space:normal;max-width:110px}.header-ads,.footer-ads-ticker{padding:6px 8px}.ad-flip-viewport{width:min(94vw,520px);aspect-ratio:16/5}}
+@media(max-width:640px){.site-brand img{max-width:135px!important;max-height:48px!important}.site-brand-name{font-size:12px;white-space:normal;max-width:110px}.header-ads,.footer-ads-ticker{padding:6px 8px}.ad-flip-viewport{width:min(94vw,520px);aspect-ratio:16/5}.article-inside-ad,.global-page-ad{aspect-ratio:16/7}.global-page-ads{width:min(100% - 20px,520px);margin-block:20px}.article-sidebar-ad{aspect-ratio:16/10}}
 
 
 /* ── Single article-image logo watermark ────────────────── */
@@ -915,6 +917,17 @@ html[dir="ltr"] .article-logo-watermark{right:auto!important;left:14px!important
   @endif
   @yield('content')
 </main>
+@if(
+  isset($globalSidebarAds) &&
+  $globalSidebarAds->isNotEmpty() &&
+  !request()->routeIs('home', 'articles.show', 'categories.show')
+)
+<section class="global-page-ads" aria-label="إعلانات">
+  @foreach($globalSidebarAds as $ad)
+    @include('partials.ad-unit', ['ad' => $ad, 'class' => 'global-page-ad'])
+  @endforeach
+</section>
+@endif
 @section('newsletter_section')
 <div class="container">
   <div class="newsletter-section">

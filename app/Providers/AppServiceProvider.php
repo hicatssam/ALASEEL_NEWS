@@ -161,6 +161,7 @@ class AppServiceProvider extends ServiceProvider
                     'header',
                     'footer',
                     'popup',
+                    'sidebar',
                 ])
                 ->latest()
                 ->get()
@@ -181,6 +182,11 @@ class AppServiceProvider extends ServiceProvider
                 collect()
             );
 
+            $globalSidebarAds = $layoutAds->get(
+                'sidebar',
+                collect()
+            );
+
             /*
             |--------------------------------------------------------------------------
             | إرسال البيانات للـ Layout
@@ -195,7 +201,8 @@ class AppServiceProvider extends ServiceProvider
                 'globalBreakingAlerts',
                 'headerAds',
                 'footerAds',
-                'popupAds'
+                'popupAds',
+                'globalSidebarAds'
             ));
         });
 
