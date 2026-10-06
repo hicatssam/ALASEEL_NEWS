@@ -623,9 +623,22 @@ body::after{display:none}
   user-select:none;
   filter:drop-shadow(0 2px 5px rgba(0,0,0,.55));
 }
+.article-main-media > img.article-logo-watermark{
+  position:absolute;
+  right:14px;
+  bottom:14px;
+  width:clamp(58px,9vw,105px);
+  height:auto;
+  max-height:58px;
+  object-fit:contain;
+  z-index:8;
+  padding:0;
+  background:transparent;
+}
 html[dir="ltr"] .article-logo-watermark{right:auto;left:14px}
 @media(max-width:640px){
   .article-logo-watermark{right:9px;bottom:9px;width:62px;max-height:42px}
+  .article-main-media > img.article-logo-watermark{right:9px;bottom:9px;width:62px;height:auto;max-height:42px}
   html[dir="ltr"] .article-logo-watermark{right:auto;left:9px}
 }
 
