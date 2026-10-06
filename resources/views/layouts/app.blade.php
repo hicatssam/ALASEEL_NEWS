@@ -1199,6 +1199,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 
   document.querySelectorAll(selectors.join(',')).forEach((img)=>{
     if (img.closest('.site-brand,.footer-brand-name,.header-ads,.footer-ads-ticker,.ad-media-shell,.site-ad-unit')) return;
+    if (img.closest('.article-image-with-logo')) return;
 
     const install=()=>{
       if ((img.naturalWidth && img.naturalWidth < 220) || (img.naturalHeight && img.naturalHeight < 140)) return;
@@ -1206,7 +1207,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       let holder=img.parentElement;
       if(!holder) return;
 
-      if(holder.querySelector(':scope > .article-logo-watermark')) return;
+      if(holder.querySelector(':scope > .article-logo-watermark, :scope > .article-image-logo')) return;
 
       holder.classList.add('article-logo-watermark-target');
 
