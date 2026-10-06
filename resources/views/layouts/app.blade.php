@@ -625,13 +625,22 @@ body::after{display:none}
 /* ── Single article-image logo watermark ────────────────── */
 .article-logo-watermark-target{position:relative!important}
 .article-logo-watermark{
-  position:absolute;
-  right:14px;
-  bottom:14px;
+  position:absolute!important;
+  top:auto!important;
+  left:auto!important;
+  right:14px!important;
+  bottom:14px!important;
   z-index:8;
-  width:clamp(58px,9vw,105px);
-  max-height:58px;
-  object-fit:contain;
+  width:clamp(58px,9vw,105px)!important;
+  min-width:0!important;
+  max-width:105px!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:58px!important;
+  object-fit:contain!important;
+  padding:0!important;
+  margin:0!important;
+  background:transparent!important;
   pointer-events:none;
   user-select:none;
   filter:drop-shadow(0 2px 5px rgba(0,0,0,.55));
@@ -648,11 +657,11 @@ body::after{display:none}
   padding:0;
   background:transparent;
 }
-html[dir="ltr"] .article-logo-watermark{right:auto;left:14px}
+html[dir="ltr"] .article-logo-watermark{right:auto!important;left:14px!important}
 @media(max-width:640px){
-  .article-logo-watermark{right:9px;bottom:9px;width:62px;max-height:42px}
+  .article-logo-watermark{right:9px!important;bottom:9px!important;width:62px!important;max-width:62px!important;max-height:42px!important}
   .article-main-media > img.article-logo-watermark{right:9px;bottom:9px;width:62px;height:auto;max-height:42px}
-  html[dir="ltr"] .article-logo-watermark{right:auto;left:9px}
+  html[dir="ltr"] .article-logo-watermark{right:auto!important;left:9px!important}
 }
 
 /* ── Latest updates: always visible under the header logo row ── */
@@ -1189,7 +1198,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   ];
 
   document.querySelectorAll(selectors.join(',')).forEach((img)=>{
-    if (img.closest('.site-brand,.footer-brand-name,.header-ads,.footer-ads-ticker,.ad-media-shell')) return;
+    if (img.closest('.site-brand,.footer-brand-name,.header-ads,.footer-ads-ticker,.ad-media-shell,.site-ad-unit')) return;
 
     const install=()=>{
       if ((img.naturalWidth && img.naturalWidth < 220) || (img.naturalHeight && img.naturalHeight < 140)) return;
