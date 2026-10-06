@@ -107,11 +107,9 @@ class Advertisement extends Model
 
         $path = str_replace('\\', '/', $media);
 
-        $path = preg_replace(
-            '#^/?(?:public/|storage/app/public/|storage/)+#',
-            '',
-            $path
-        );
+        $path = preg_replace('#^.*?/storage/app/public/#', '', $path);
+        $path = preg_replace('#^.*?/public/storage/#', '', $path);
+        $path = preg_replace('#^/?(?:public/|storage/)+#', '', $path);
 
         if (blank($path)) {
             return null;
