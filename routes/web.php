@@ -150,17 +150,12 @@ Route::prefix('admin')
     ->group(function () {
  
     
-Route::get('/about', [AboutPageController::class, 'index'])
-    ->name('about.index');
-
-Route::get('/about/edit', [AboutPageController::class, 'edit'])
-    ->name('about.edit');
-
-Route::put('/about', [AboutPageController::class, 'update'])
-    ->name('about.update');
-
-Route::resource('team-members', TeamMemberController::class)
-    ->except(['show']);
+Route::middleware('permission:manage-about')->group(function () {
+    Route::get('/about', [AboutPageController::class, 'index'])->name('about.index');
+    Route::get('/about/edit', [AboutPageController::class, 'edit'])->name('about.edit');
+    Route::put('/about', [AboutPageController::class, 'update'])->name('about.update');
+    Route::resource('team-members', TeamMemberController::class)->except(['show']);
+});
     
  
         Route::get('/', [DashboardController::class, 'index'])
@@ -174,7 +169,7 @@ Route::resource('team-members', TeamMemberController::class)
  
     
  
-        Route::middleware('permission:manage-articles')
+        Route::middleware('permission:manage-articles,manage-stories,manage-reports,manage-opinions')
             ->group(function () {
  
                 Route::resource('articles', AdminArticleController::class);
@@ -198,97 +193,45 @@ Route::resource('team-members', TeamMemberController::class)
                     [AdminArticleController::class, 'uploadContentImage']
                 )->name('articles.upload-content-image');
  
-                Route::get(
-                    'media',
-                    [MediaLibraryController::class, 'index']
-                )->name('media.index');
- 
-                Route::get(
-                    'media-picker',
-                    [MediaLibraryController::class, 'picker']
-                )->name('media.picker');
- 
-                Route::post(
-                    'media',
-                    [MediaLibraryController::class, 'store']
-                )->name('media.store');
- 
-               
-                Route::post(
-                    'media/editor-upload',
-                    [MediaLibraryController::class, 'editorUpload']
-                )->name('media.editor-upload');
- 
-                Route::patch(
-                    'media/{mediaFile}',
-                    [MediaLibraryController::class, 'update']
-                )->name('media.update');
- 
-                Route::delete(
-                    'media/{mediaFile}',
-                    [MediaLibraryController::class, 'destroy']
-                )->name('media.destroy');
-
-                Route::delete(
-                    'media',
-                    [MediaLibraryController::class, 'bulkDestroy']
-                )->name('media.bulk-destroy');
             });
- 
- 
-        Route::middleware('role:editor,super-admin')
-            ->group(function () {
 
-                Route::resource('breaking-alerts', BreakingAlertController::class)
-                    ->only(['index', 'store', 'update', 'destroy']);
+        Route::middleware('permission:manage-media')->group(function () {
+            Route::get('media', [MediaLibraryController::class, 'index'])->name('media.index');
+            Route::get('media-picker', [MediaLibraryController::class, 'picker'])->name('media.picker');
+            Route::post('media', [MediaLibraryController::class, 'store'])->name('media.store');
+            Route::post('media/editor-upload', [MediaLibraryController::class, 'editorUpload'])->name('media.editor-upload');
+            Route::patch('media/{mediaFile}', [MediaLibraryController::class, 'update'])->name('media.update');
+            Route::delete('media/{mediaFile}', [MediaLibraryController::class, 'destroy'])->name('media.destroy');
+            Route::delete('media', [MediaLibraryController::class, 'bulkDestroy'])->name('media.bulk-destroy');
+        });
 
-                Route::resource(
-                    'categories',
-                    AdminCategoryController::class
-                );
- 
-                Route::resource('tags', TagController::class);
- 
-                Route::resource(
-                    'journalists',
-                    JournalistController::class
-                );
- 
-                Route::resource(
-                    'advertisements',
-                    AdvertisementController::class
-                );
- 
-                Route::resource(
-                    'videos',
-                    AdminVideoController::class
-                );
- 
-                Route::get(
-                    'comments',
-                    [CommentController::class, 'index']
-                )->name('comments.index');
- 
-                Route::patch(
-                    'comments/{comment}/status',
-                    [CommentController::class, 'updateStatus']
-                )->name('comments.status');
- 
-                Route::delete(
-                    'comments/{comment}',
-                    [CommentController::class, 'destroy']
-                )->name('comments.destroy');
- 
-                Route::resource(
-                    'live-streams',
-                    AdminLiveStreamController::class
-                );
- 
-                Route::patch(
-                    'live-streams/{liveStream}/toggle',
-                    [AdminLiveStreamController::class, 'toggle']
-                )->name('live-streams.toggle');
-            });
+        Route::middleware('permission:manage-breaking-alerts')->group(function () {
+            Route::resource('breaking-alerts', BreakingAlertController::class)->only(['index', 'store', 'update', 'destroy']);
+        });
+        Route::middleware('permission:manage-categories')->group(function () {
+            Route::resource('categories', AdminCategoryController::class);
+        });
+        Route::middleware('permission:manage-tags')->group(function () {
+            Route::resource('tags', TagController::class);
+        });
+        Route::middleware('permission:manage-journalists')->group(function () {
+            Route::resource('journalists', JournalistController::class);
+        });
+        Route::middleware('permission:manage-ads')->group(function () {
+            Route::resource('advertisements', AdvertisementController::class);
+        });
+        Route::middleware('permission:manage-videos')->group(function () {
+            Route::resource('videos', AdminVideoController::class);
+        });
+        Route::middleware('permission:manage-comments')->group(function () {
+            Route::get('comments', [CommentController::class, 'index'])->name('comments.index');
+            Route::patch('comments/{comment}/status', [CommentController::class, 'updateStatus'])->name('comments.status');
+            Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
+        });
+        Route::middleware('permission:manage-live-streams')->group(function () {
+            Route::resource('live-streams', AdminLiveStreamController::class);
+            Route::patch('live-streams/{liveStream}/toggle', [AdminLiveStreamController::class, 'toggle'])->name('live-streams.toggle');
+        });
  
        
  
@@ -296,7 +239,7 @@ Route::resource('team-members', TeamMemberController::class)
             Route::resource('roles', RoleController::class)->except('show');
         });
 
-        Route::middleware('role:super-admin')
+        Route::middleware('permission:manage-users')
             ->group(function () {
  
               
@@ -314,6 +257,9 @@ Route::resource('team-members', TeamMemberController::class)
                 Route::resource('users', UserController::class);
  
                
+            });
+
+        Route::middleware('permission:manage-settings')->group(function () {
                 Route::get(
                     'settings',
                     [SettingController::class, 'index']
@@ -325,6 +271,9 @@ Route::resource('team-members', TeamMemberController::class)
                 )->name('settings.update');
  
  
+        });
+
+        Route::middleware('permission:manage-contact')->group(function () {
                 Route::get(
                     'contact',
                     [ContactMessageController::class, 'index']
@@ -342,6 +291,9 @@ Route::resource('team-members', TeamMemberController::class)
  
                
  
+        });
+
+        Route::middleware('permission:manage-newsletter')->group(function () {
                 Route::get(
                     'newsletter',
                     [NewsletterController::class, 'index']
@@ -353,13 +305,16 @@ Route::resource('team-members', TeamMemberController::class)
                 )->name('newsletter.destroy');
  
  
+        });
+
+        Route::middleware('permission:view-activity-logs')->group(function () {
                 Route::get(
                     'activity-logs',
                     [ActivityLogController::class, 'index']
                 )->name('activity-logs.index');
- 
-               
- 
+        });
+
+        Route::middleware('permission:manage-notifications')->group(function () {
                 Route::get(
                     '/notifications/check-new',
                     [NotificationController::class, 'checkNew']
