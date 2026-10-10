@@ -1,7 +1,5 @@
 @php
-    /*
-     * صورة المقال + شعار واحد فقط.
-     */
+    /* صورة المقال المولدة من السيرفر وبداخلها الشعار. */
 
     $articleImageUrl = route('site.article-image', [
         'article' => $article->id,
@@ -10,9 +8,6 @@
 
     $articleImageStyle = $style ?? '';
 
-    $articleLogoUrl = route('site.logo', [
-        'v' => $siteSettings['_site_logo_version'] ?? 1,
-    ]);
 @endphp
 
 <div
@@ -35,26 +30,6 @@
         onerror="
             this.onerror=null;
             this.style.display='none';
-        "
-    >
-
-    <img
-        src="{{ $articleLogoUrl }}"
-        alt=""
-        aria-hidden="true"
-        class="article-image-logo"
-        style="
-            position:absolute;
-            right:14px;
-            bottom:14px;
-            width:90px;
-            max-width:22%;
-            height:auto;
-            max-height:55px;
-            object-fit:contain;
-            z-index:10;
-            pointer-events:none;
-            filter:drop-shadow(0 2px 5px rgba(0,0,0,.65));
         "
     >
 </div>

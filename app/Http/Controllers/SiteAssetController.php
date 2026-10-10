@@ -14,22 +14,22 @@ class SiteAssetController extends Controller
     /**
      * صورة المقال الموحدة 1200×630.
      *
-     * مهم:
-     * لا يتم دمج شعار الموقع فوق صورة المقال.
-     * الصورة الأصلية تبقى كما هي من ناحية الشعار.
+     * يتم دمج شعار الموقع داخل النسخة المعروضة نفسها، حتى يبقى
+     * موجودًا عند حفظ الصورة مباشرة من المتصفح أو مشاركتها.
      */
     public function articleImage(Article $article): Response
     {
         $articleVersion = $article->updated_at?->timestamp ?? 1;
+        $logoSetting = Setting::query()->where('key', 'site_logo')->first();
+        $logoVersion = $logoSetting?->updated_at?->timestamp ?? 1;
 
         /*
-         * إصدار جديد من اسم الكاش حتى لا يتم استخدام
-         * الصور القديمة التي كان الشعار مدموجًا داخلها.
+         * اسم الكاش يتغير عند تعديل المقال أو شعار الموقع.
          */
-        $destination = "generated/article-images/v2-{$article->id}-{$articleVersion}.jpg";
+        $destination = "generated/article-images/v3-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
 
         if (! Storage::disk('public')->exists($destination)) {
-            $this->generateArticleImage($article, $destination);
+            $this->generateArticleImage($article, $destination, true);
         }
 
         /*
