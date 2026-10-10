@@ -85,32 +85,6 @@ class SiteAssetController extends Controller
     }
 
     /**
-     * تنزيل نسخة من صورة المقال يكون شعار الأصيل مدموجًا داخلها فعليًا.
-     */
-    public function downloadArticleImage(Article $article): Response
-    {
-        $articleVersion = $article->updated_at?->timestamp ?? 1;
-        $logoSetting = Setting::query()->where('key', 'site_logo')->first();
-        $logoVersion = $logoSetting?->updated_at?->timestamp ?? 1;
-        $destination = "generated/article-images/download-v1-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
-
-        if (! Storage::disk('public')->exists($destination)) {
-            $this->generateArticleImage($article, $destination, true);
-        }
-
-        abort_unless(Storage::disk('public')->exists($destination), 404, 'تعذر إنشاء صورة المقال بالشعار.');
-
-        return response()->download(
-            Storage::disk('public')->path($destination),
-            'alaseel-article-'.$article->id.'.jpg',
-            [
-                'Content-Type' => 'image/jpeg',
-                'Cache-Control' => 'private, max-age=86400',
-            ]
-        );
-    }
-
-    /**
      * عرض ملفات media الموجودة داخل storage/public.
      */
     public function media(Request $request): Response
