@@ -156,6 +156,7 @@ class ArticleController extends Controller
             'message' => 'علّق ' . $validated['name']
                 . ' على: ' . $article->title,
             'type' => 'comment',
+            'action_url' => route('admin.articles.show', $article, false),
         ]);
 
         return back()->with(
