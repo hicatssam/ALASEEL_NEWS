@@ -624,10 +624,10 @@
           @forelse($opinionAndArticles->take(5) as $opinionOrArticle)
             @php
               $journalist = $opinionOrArticle->journalist;
-              $displayAuthorName = $opinionOrArticle->content_type === 'opinion'
+              $displayAuthorName = in_array($opinionOrArticle->content_type, ['opinion', 'article'], true)
                   ? ($opinionOrArticle->content_owner_name ?: $journalist?->name)
                   : $journalist?->name;
-              $displayAuthorPhoto = $opinionOrArticle->content_type === 'opinion'
+              $displayAuthorPhoto = in_array($opinionOrArticle->content_type, ['opinion', 'article'], true)
                   ? ($opinionOrArticle->content_owner_photo_url ?: $journalist?->photo_url)
                   : $journalist?->photo_url;
               $hasAuthorPhoto = filled($displayAuthorPhoto);
