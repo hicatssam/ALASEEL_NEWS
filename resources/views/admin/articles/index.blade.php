@@ -185,17 +185,31 @@
                         </td>
                         <td><span class="badge badge-secondary">{{ $article->category?->name ?? '—' }}</span></td>
                         <td>
+                            @php
+                                $adminAuthorName = in_array($article->content_type, ['article', 'opinion', 'story'], true)
+                                    ? ($article->content_owner_name ?: $article->journalist?->name)
+                                    : $article->journalist?->name;
+                                $adminAuthorPhoto = in_array($article->content_type, ['article', 'opinion', 'story'], true)
+                                    ? ($article->content_owner_photo_url ?: $article->journalist?->photo_url)
+                                    : $article->journalist?->photo_url;
+                                $adminAuthorLabel = match($article->content_type) {
+                                    'article' => 'كاتب المقال',
+                                    'opinion' => 'صاحب الرأي',
+                                    'story' => 'كاتب القصة',
+                                    default => null,
+                                };
+                            @endphp
                             <div style="display:flex;align-items:center;gap:9px;min-width:150px">
-                                @if($article->journalist?->photo_url)
-                                    <img src="{{ $article->journalist->photo_url }}" alt="{{ $article->journalist->name }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #c9a84c;flex-shrink:0">
+                                @if($adminAuthorPhoto)
+                                    <img src="{{ $adminAuthorPhoto }}" alt="{{ $adminAuthorName }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #c9a84c;flex-shrink:0">
                                 @else
                                     <span style="width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#f5ecd3;color:#9b741d;flex-shrink:0"><i class="fa-solid fa-user-pen"></i></span>
                                 @endif
                                 <span style="display:flex;flex-direction:column;gap:2px">
-                                    @if($article->content_type === 'opinion')
-                                        <small style="font-size:10px;color:#9b741d;font-weight:700">صاحب الرأي</small>
+                                    @if($adminAuthorLabel)
+                                        <small style="font-size:10px;color:#9b741d;font-weight:700">{{ $adminAuthorLabel }}</small>
                                     @endif
-                                    <strong style="font-size:12px;color:#1a1a2e">{{ $article->journalist?->name ?? 'غير محدد' }}</strong>
+                                    <strong style="font-size:12px;color:#1a1a2e">{{ $adminAuthorName ?: 'غير محدد' }}</strong>
                                 </span>
                             </div>
                         </td>

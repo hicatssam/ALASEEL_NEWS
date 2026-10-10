@@ -72,6 +72,9 @@
         </div>
         <div style="margin-bottom:10px"><strong>{{ __('admin.label_category') }}:</strong> {{ $article->category?->name ?? '—' }}</div>
         <div style="margin-bottom:10px"><strong>{{ __('admin.label_journalist') }}:</strong> {{ $article->journalist?->name ?? '—' }}</div>
+        @if(in_array($article->content_type, ['article', 'opinion', 'story'], true))
+        <div style="margin-bottom:10px"><strong>{{ match($article->content_type) { 'article' => 'كاتب المقال', 'opinion' => 'صاحب الرأي', default => 'كاتب القصة' } }}:</strong> {{ $article->content_owner_name ?? '—' }}</div>
+        @endif
         <div style="margin-bottom:10px"><strong>{{ __('admin.col_views') }}:</strong> <span style="color:#c9a84c;font-weight:700">{{ number_format($article->views) }}</span></div>
         <div style="margin-bottom:10px"><strong>{{ __('admin.label_reading_time') }}:</strong> {{ $article->reading_time }} {{ __('admin.label_minutes_short') }}</div>
         <div style="margin-bottom:10px"><strong>{{ __('admin.label_created_at') }}:</strong> {{ $article->created_at->format('Y/m/d H:i') }}</div>
