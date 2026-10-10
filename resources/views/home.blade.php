@@ -624,16 +624,21 @@
           @forelse($opinionAndArticles->take(5) as $opinionOrArticle)
             @php
               $journalist = $opinionOrArticle->journalist;
-              $journalistPhoto = $journalist?->photo_url;
-              $hasJournalistPhoto = is_string($journalistPhoto) && trim($journalistPhoto) !== '';
+              $displayAuthorName = $opinionOrArticle->content_type === 'opinion'
+                  ? ($opinionOrArticle->content_owner_name ?: $journalist?->name)
+                  : $journalist?->name;
+              $displayAuthorPhoto = $opinionOrArticle->content_type === 'opinion'
+                  ? ($opinionOrArticle->content_owner_photo_url ?: $journalist?->photo_url)
+                  : $journalist?->photo_url;
+              $hasAuthorPhoto = filled($displayAuthorPhoto);
             @endphp
 
             <a href="{{ route('articles.show', $opinionOrArticle->slug) }}" class="widget-article" style="gap:11px">
               <span style="width:46px;height:46px;flex:0 0 46px;position:relative;display:block">
-                @if($hasJournalistPhoto)
+                @if($hasAuthorPhoto)
                   <img
-                    src="{{ $journalistPhoto }}"
-                    alt="{{ $journalist?->name ?? '' }}"
+                    src="{{ $displayAuthorPhoto }}"
+                    alt="{{ $displayAuthorName ?? '' }}"
                     loading="lazy"
                     style="position:absolute;inset:0;width:46px;height:46px;display:block;border-radius:50%;object-fit:cover;border:2px solid var(--gold)"
                     onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
@@ -651,7 +656,7 @@
               <span class="widget-article-body">
                 <strong class="widget-article-title">{{ Str::limit($opinionOrArticle->title, 62) }}</strong>
                 <small style="color:var(--text-muted)">
-                  {{ $journalist?->name ?? 'وكالة الأصيل' }} · {{ $opinionOrArticle->content_type_label }}
+                  {{ $displayAuthorName ?: 'وكالة الأصيل' }} · {{ $opinionOrArticle->content_type_label }}
                 </small>
               </span>
             </a>
