@@ -66,10 +66,6 @@ Route::get('/article-media/{article}', [SiteAssetController::class, 'articleImag
     ->whereNumber('article')
     ->name('site.article-image');
 
-Route::get('/article-media/{article}/download', [SiteAssetController::class, 'downloadArticleImage'])
-    ->whereNumber('article')
-    ->name('site.article-image.download');
-
  
 Route::get('/language/{locale}', function (string $locale) {
     if (in_array($locale, ['ar', 'en', 'fr'], true)) {
