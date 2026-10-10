@@ -26,6 +26,9 @@
             'v' => $article->updated_at?->timestamp ?? 1,
             'lv' => $siteSettings['_site_logo_version'] ?? 1,
         ]);
+        $rawArticleImage = $article->getRawOriginal('main_image');
+        $canDownloadBrandedImage = filled($article->mainImageMedia?->file_path)
+            || (filled($rawArticleImage) && !filter_var($rawArticleImage, FILTER_VALIDATE_URL));
         $articleVideo = $mediaUrl($article->video_url ?? ($article->video ?? null));
         $articleCanonicalUrl = route('articles.show', $article->slug);
         $articleShareUrl = route('articles.short', ['id' => $article->id]);
@@ -206,6 +209,13 @@
                                 @if ($article->mainImageMedia?->caption)
                                     <figcaption class="article-main-caption">{{ $article->mainImageMedia->caption }}
                                     </figcaption>
+                                @endif
+                                @if($canDownloadBrandedImage)
+                                    <a href="{{ route('site.article-image.download', $article->id) }}"
+                                       class="article-image-download" download>
+                                        <i class="fa-solid fa-download"></i>
+                                        تحميل الصورة بالشعار
+                                    </a>
                                 @endif
                             </figure>
                         @endif
@@ -507,6 +517,31 @@
             object-fit: cover
         }
 
+        .article-image-download {
+            position: absolute;
+            left: 14px;
+            top: 14px;
+            z-index: 12;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 13px;
+            border: 1px solid rgba(255,255,255,.22);
+            border-radius: 9px;
+            color: #fff;
+            background: rgba(0,0,0,.72);
+            font-size: 12px;
+            font-weight: 800;
+            backdrop-filter: blur(7px);
+            transition: color .2s ease,background .2s ease,transform .2s ease;
+        }
+
+        .article-image-download:hover {
+            color: #111;
+            background: var(--gold);
+            transform: translateY(-2px);
+        }
+
         .article-main-caption {
             position: absolute;
             inset-inline: 0;
@@ -791,6 +826,8 @@
                 margin-bottom: 18px;
                 border-radius: 8px
             }
+
+            .article-image-download {left:9px;top:9px;padding:8px 10px;font-size:11px}
 
             .article-comment-fields {
                 grid-template-columns: 1fr !important
