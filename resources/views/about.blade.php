@@ -934,13 +934,12 @@
             font-size: 1.03rem;
         }
 
-       .about-team-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 260px));
-    justify-content: center;
-    align-items: stretch;
-    gap: 28px;
-}
+        .about-team-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            align-items: stretch;
+            gap: 24px;
+        }
 
 .about-team-card {
     width: 100%;
@@ -1027,9 +1026,8 @@
 
         @media (max-width: 1100px) {
             .about-team-grid {
-        grid-template-columns: minmax(0, 360px);
-        justify-content: center;
-    }
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
         }
 
         @media (max-width: 900px) {
