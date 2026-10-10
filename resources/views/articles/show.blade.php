@@ -23,7 +23,7 @@
         };
         $articleImage = route('site.article-image', [
             'article' => $article->id,
-            'iv' => 3,
+            'iv' => 4,
             'v' => $article->updated_at?->timestamp ?? 1,
             'lv' => $siteSettings['_site_logo_version'] ?? 1,
         ]);
@@ -250,7 +250,7 @@
                                         <a href="{{ route('articles.show', $relatedArticle->slug) }}"
                                             class="article-related-card">
                                             <div class="article-related-image">
-                                                @php($relatedImage = route('site.article-image', ['article' => $relatedArticle->id, 'iv' => 3, 'v' => $relatedArticle->updated_at?->timestamp ?? 1, 'lv' => $siteSettings['_site_logo_version'] ?? 1]))
+                                                @php($relatedImage = route('site.article-image', ['article' => $relatedArticle->id, 'iv' => 4, 'v' => $relatedArticle->updated_at?->timestamp ?? 1, 'lv' => $siteSettings['_site_logo_version'] ?? 1]))
                                                 <img src="{{ $relatedImage }}" alt="{{ $relatedArticle->title }}"
                                                     loading="lazy"
                                                     onerror="this.onerror=null;this.src='{{ route('site.logo') }}';this.style.objectFit='contain';this.style.padding='14px'">
@@ -373,7 +373,7 @@
                                 <a href="{{ route('articles.show', $r->slug) }}" class="widget-article">
                                     <div
                                         style="width:68px;height:60px;border-radius:6px;background:var(--surface2);flex-shrink:0;overflow:hidden">
-                                        @php($sidebarImage = route('site.article-image', ['article' => $r->id, 'iv' => 3, 'v' => $r->updated_at?->timestamp ?? 1, 'lv' => $siteSettings['_site_logo_version'] ?? 1]))
+                                        @php($sidebarImage = route('site.article-image', ['article' => $r->id, 'iv' => 4, 'v' => $r->updated_at?->timestamp ?? 1, 'lv' => $siteSettings['_site_logo_version'] ?? 1]))
                                         <img src="{{ $sidebarImage }}" class="widget-article-img"
                                             alt="{{ $r->title }}"
                                             onerror="this.onerror=null;this.src='{{ route('site.logo') }}';this.style.objectFit='contain';this.style.padding='8px'">
