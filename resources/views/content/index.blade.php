@@ -10,10 +10,10 @@
     <div class="{{ $showAuthorList ? 'author-content-list' : 'content-cards-grid' }}">
     @forelse($articles as $article)
         @php
-            $displayAuthorName = $article->content_type === 'opinion'
+            $displayAuthorName = in_array($article->content_type, ['opinion', 'article'], true)
                 ? ($article->content_owner_name ?: $article->journalist?->name)
                 : $article->journalist?->name;
-            $displayAuthorPhoto = $article->content_type === 'opinion'
+            $displayAuthorPhoto = in_array($article->content_type, ['opinion', 'article'], true)
                 ? ($article->content_owner_photo_url ?: $article->journalist?->photo_url)
                 : $article->journalist?->photo_url;
         @endphp
