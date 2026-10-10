@@ -85,6 +85,32 @@ class SiteAssetController extends Controller
     }
 
     /**
+     * تنزيل نسخة من صورة المقال يكون شعار الأصيل مدموجًا داخلها فعليًا.
+     */
+    public function downloadArticleImage(Article $article): Response
+    {
+        $articleVersion = $article->updated_at?->timestamp ?? 1;
+        $logoSetting = Setting::query()->where('key', 'site_logo')->first();
+        $logoVersion = $logoSetting?->updated_at?->timestamp ?? 1;
+        $destination = "generated/article-images/download-v1-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
+
+        if (! Storage::disk('public')->exists($destination)) {
+            $this->generateArticleImage($article, $destination, true);
+        }
+
+        abort_unless(Storage::disk('public')->exists($destination), 404, 'تعذر إنشاء صورة المقال بالشعار.');
+
+        return response()->download(
+            Storage::disk('public')->path($destination),
+            'alaseel-article-'.$article->id.'.jpg',
+            [
+                'Content-Type' => 'image/jpeg',
+                'Cache-Control' => 'private, max-age=86400',
+            ]
+        );
+    }
+
+    /**
      * عرض ملفات media الموجودة داخل storage/public.
      */
     public function media(Request $request): Response
@@ -490,11 +516,12 @@ class SiteAssetController extends Controller
     /**
      * إنشاء نسخة 1200×630 من صورة المقال.
      *
-     * لا يتم إضافة أي شعار أو Watermark.
+     * النسخة العادية بلا شعار، ونسخة التنزيل يمكن توليدها بالشعار.
      */
     private function generateArticleImage(
         Article $article,
-        string $destination
+        string $destination,
+        bool $withLogo = false
     ): void {
         if (
             ! function_exists(
@@ -642,20 +669,9 @@ class SiteAssetController extends Controller
 
         imagedestroy($source);
 
-        /*
-        |--------------------------------------------------------------------------
-        | لا يوجد Logo هنا
-        |--------------------------------------------------------------------------
-        |
-        | الكود القديم كان يستدعي:
-        |
-        | $this->localLogoPath()
-        |
-        | ثم يدمج الشعار باستخدام imagecopyresampled().
-        |
-        | تم حذف ذلك بالكامل.
-        |
-        */
+        if ($withLogo) {
+            $this->placeLogoOnArticleImage($canvas, $width, $height);
+        }
 
         Storage::disk('public')
             ->makeDirectory(
@@ -670,6 +686,58 @@ class SiteAssetController extends Controller
         );
 
         imagedestroy($canvas);
+    }
+
+    /**
+     * دمج الشعار أسفل يمين الصورة مع الحفاظ على الشفافية ونسبة الأبعاد.
+     */
+    private function placeLogoOnArticleImage(\GdImage $canvas, int $canvasWidth, int $canvasHeight): void
+    {
+        $logoPath = $this->localLogoPath();
+
+        if ($logoPath === null || ! is_file($logoPath)) {
+            return;
+        }
+
+        $logoContents = @file_get_contents($logoPath);
+        $logo = $logoContents !== false ? @imagecreatefromstring($logoContents) : false;
+
+        if ($logo === false) {
+            return;
+        }
+
+        $logoWidth = imagesx($logo);
+        $logoHeight = imagesy($logo);
+
+        if ($logoWidth < 1 || $logoHeight < 1) {
+            imagedestroy($logo);
+            return;
+        }
+
+        $maxWidth = 180;
+        $maxHeight = 86;
+        $scale = min($maxWidth / $logoWidth, $maxHeight / $logoHeight, 1);
+        $targetWidth = max(1, (int) round($logoWidth * $scale));
+        $targetHeight = max(1, (int) round($logoHeight * $scale));
+        $padding = 24;
+        $targetX = max(0, $canvasWidth - $targetWidth - $padding);
+        $targetY = max(0, $canvasHeight - $targetHeight - $padding);
+
+        imagealphablending($canvas, true);
+        imagecopyresampled(
+            $canvas,
+            $logo,
+            $targetX,
+            $targetY,
+            0,
+            0,
+            $targetWidth,
+            $targetHeight,
+            $logoWidth,
+            $logoHeight
+        );
+
+        imagedestroy($logo);
     }
 
     /**
@@ -725,8 +793,7 @@ class SiteAssetController extends Controller
     /**
      * الحصول على المسار المحلي لشعار الموقع.
      *
-     * تستخدم هذه الدالة للأيقونات فقط،
-     * وليس لصور المقالات.
+     * تستخدم هذه الدالة للأيقونات ولنسخة صورة المقال القابلة للتنزيل.
      */
     private function localLogoPath(): ?string
     {
