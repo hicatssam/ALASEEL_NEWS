@@ -52,6 +52,17 @@ class DatabaseSeeder extends Seeder
             ['name'=>'إدارة الإعدادات','slug'=>'manage-settings','module'=>'settings'],
             ['name'=>'عرض التقارير','slug'=>'view-reports','module'=>'reports'],
             ['name'=>'إدارة الوسائط','slug'=>'manage-media','module'=>'media'],
+            ['name'=>'إدارة التنبيهات العاجلة','slug'=>'manage-breaking-alerts','module'=>'content'],
+            ['name'=>'إدارة الوسوم','slug'=>'manage-tags','module'=>'content'],
+            ['name'=>'إدارة الصحفيين','slug'=>'manage-journalists','module'=>'content'],
+            ['name'=>'إدارة الفيديوهات','slug'=>'manage-videos','module'=>'content'],
+            ['name'=>'إدارة التعليقات','slug'=>'manage-comments','module'=>'content'],
+            ['name'=>'إدارة البث المباشر','slug'=>'manage-live-streams','module'=>'content'],
+            ['name'=>'إدارة من نحن والفريق','slug'=>'manage-about','module'=>'settings'],
+            ['name'=>'إدارة رسائل التواصل','slug'=>'manage-contact','module'=>'communication'],
+            ['name'=>'إدارة النشرة البريدية','slug'=>'manage-newsletter','module'=>'communication'],
+            ['name'=>'عرض سجل النشاط','slug'=>'view-activity-logs','module'=>'reports'],
+            ['name'=>'إدارة الإشعارات','slug'=>'manage-notifications','module'=>'communication'],
         ];
 
         $permModels = [];
@@ -75,6 +86,14 @@ class DatabaseSeeder extends Seeder
             $permModels['manage-categories']->id,
             $permModels['manage-media']->id,
             $permModels['view-reports']->id,
+            $permModels['manage-breaking-alerts']->id,
+            $permModels['manage-tags']->id,
+            $permModels['manage-journalists']->id,
+            $permModels['manage-videos']->id,
+            $permModels['manage-comments']->id,
+            $permModels['manage-live-streams']->id,
+            $permModels['manage-about']->id,
+            $permModels['manage-ads']->id,
         ]);
 
         $journalist->permissions()->attach([

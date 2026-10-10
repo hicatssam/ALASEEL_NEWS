@@ -115,7 +115,7 @@ class Advertisement extends Model
             return null;
         }
 
-        return route('site.media', ['path' => $path]);
+        return route('site.media', ['path' => ltrim((string) $path, '/')], false);
     }
 
     /**

@@ -98,6 +98,7 @@ class UserController extends Controller
             'title' => 'مستخدم جديد: ' . $user->name,
             'message' => 'تم تسجيل مستخدم جديد بالبريد: ' . $user->email,
             'type' => 'user',
+            'action_url' => route('admin.users.edit', $user, false),
         ]);
 
         return redirect()

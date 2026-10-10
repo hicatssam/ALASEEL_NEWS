@@ -46,7 +46,7 @@ $typeUrl   = ['article'=>route('admin.articles.index'),'contact'=>route('admin.c
   @php
     $icon  = $typeIcon[$notif->type]  ?? 'fa-circle-info';
     $color = $typeColor[$notif->type] ?? '#888';
-    $url   = $typeUrl[$notif->type]   ?? '#';
+    $url   = $notif->action_url ?: ($typeUrl[$notif->type] ?? '#');
   @endphp
   <div style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.06);background:{{ $notif->read_at ? 'transparent' : 'rgba(200,154,43,.06)' }};transition:.2s">
     <div style="width:38px;height:38px;border-radius:50%;background:{{ $color }}22;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">

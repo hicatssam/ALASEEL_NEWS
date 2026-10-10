@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 
 
@@ -36,6 +37,26 @@ class ArticleController extends Controller
         };
 
         abort_unless(auth()->user()->hasPermission($permission), 403, 'ليس لديك صلاحية إدارة هذا النوع من المحتوى.');
+    }
+
+    protected function allowedContentTypes(): array
+    {
+        if (auth()->user()->isAdmin() || auth()->user()->hasRole('editor')) {
+            return array_keys(Article::contentTypes());
+        }
+
+        $permissionMap = [
+            'news' => 'manage-articles',
+            'article' => 'manage-articles',
+            'story' => 'manage-stories',
+            'report' => 'manage-reports',
+            'opinion' => 'manage-opinions',
+        ];
+
+        return array_keys(array_filter(
+            $permissionMap,
+            fn (string $permission) => auth()->user()->hasPermission($permission)
+        ));
     }
     /*
     |--------------------------------------------------------------------------
@@ -177,6 +198,8 @@ class ArticleController extends Controller
             ->with(['category', 'journalist', 'tags'])
             ->latest();
 
+        $query->whereIn('content_type', $this->allowedContentTypes());
+
         if ($this->isJournalist()) {
             $query->where('user_id', auth()->id());
         }
@@ -227,7 +250,10 @@ class ArticleController extends Controller
             ->orderBy('name')
             ->get();
 
-        $contentTypes = Article::contentTypes();
+        $contentTypes = array_intersect_key(
+            Article::contentTypes(),
+            array_flip($this->allowedContentTypes())
+        );
 
         return view(
             'admin.articles.index',
@@ -255,11 +281,14 @@ class ArticleController extends Controller
             ->orderBy('name')
             ->get();
 
-        $contentTypes = Article::contentTypes();
+        $contentTypes = array_intersect_key(
+            Article::contentTypes(),
+            array_flip($this->allowedContentTypes())
+        );
         $requestedContentType = (string) request('content_type', 'news');
         $selectedContentType = array_key_exists($requestedContentType, $contentTypes)
             ? $requestedContentType
-            : 'news';
+            : (array_key_first($contentTypes) ?? 'news');
 
         $this->authorizeContentType($selectedContentType);
 
@@ -279,6 +308,7 @@ class ArticleController extends Controller
     {
         $data = $request->validate($this->validationRules());
         $this->authorizeContentType($data['content_type']);
+        $this->ensureReportHasImage($request, $data);
 
         $this->validateJournalistSelection(
             $data['journalist_id'] ?? null
@@ -385,6 +415,7 @@ class ArticleController extends Controller
                     'message' => 'تمت إضافة مقال جديد بحالة: '
                         . $this->statusValue($article->status),
                     'type' => 'article',
+                    'action_url' => route('admin.articles.show', $article, false),
                 ]);
 
                 return $article;
@@ -435,6 +466,9 @@ public function show(Request $request, string $slug)
                 ->orWhere('published_at', '<=', now());
         })
         ->firstOrFail();
+
+    $this->authorizeContentType($article->content_type);
+    $this->authorizeJournalistArticle($article);
 
     /*
     |--------------------------------------------------------------------------
@@ -519,6 +553,7 @@ public function show(Request $request, string $slug)
     public function edit(Article $article)
     {
         $this->authorizeJournalistArticle($article);
+        $this->authorizeContentType($article->content_type);
 
         $article->load('tags');
 
@@ -534,7 +569,10 @@ public function show(Request $request, string $slug)
             ->orderBy('name')
             ->get();
 
-        $contentTypes = Article::contentTypes();
+        $contentTypes = array_intersect_key(
+            Article::contentTypes(),
+            array_flip($this->allowedContentTypes())
+        );
 
         return view(
             'admin.articles.edit',
@@ -559,6 +597,7 @@ public function show(Request $request, string $slug)
             $this->validationRules(true)
         );
         $this->authorizeContentType($data['content_type']);
+        $this->ensureReportHasImage($request, $data, $article);
 
         $this->validateJournalistSelection(
             $data['journalist_id'] ?? null
@@ -736,6 +775,27 @@ public function show(Request $request, string $slug)
         }
     }
 
+    private function ensureReportHasImage(Request $request, array $data, ?Article $article = null): void
+    {
+        if (($data['content_type'] ?? null) !== 'report') {
+            return;
+        }
+
+        $hasIncomingImage = $request->hasFile('main_image_file')
+            || filled($data['main_image_media_id'] ?? null)
+            || filled($data['main_image_url'] ?? null);
+
+        $keepsExistingImage = $article !== null
+            && ! $request->boolean('remove_main_image')
+            && (filled($article->main_image_media_id) || filled($article->getRawOriginal('main_image')));
+
+        if (! $hasIncomingImage && ! $keepsExistingImage) {
+            throw ValidationException::withMessages([
+                'main_image_file' => 'لا يمكن إضافة تقرير بدون صورة رئيسية.',
+            ]);
+        }
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Destroy
@@ -745,6 +805,7 @@ public function show(Request $request, string $slug)
     public function destroy(Article $article)
     {
         $this->authorizeJournalistArticle($article);
+        $this->authorizeContentType($article->content_type);
 
         // لمنع الصحفي من حذف مقالاته، أزل التعليق عن الشرط التالي:
         /*
@@ -783,6 +844,7 @@ public function show(Request $request, string $slug)
         Request $request,
         Article $article
     ) {
+        $this->authorizeContentType($article->content_type);
         if ($this->isJournalist()) {
             abort(
                 403,
@@ -852,6 +914,7 @@ public function show(Request $request, string $slug)
     public function revisions(Article $article)
     {
         $this->authorizeJournalistArticle($article);
+        $this->authorizeContentType($article->content_type);
 
         $revisions = $article
             ->revisions()

@@ -26,7 +26,7 @@ class SiteAssetController extends Controller
         /*
          * اسم الكاش يتغير عند تعديل المقال أو شعار الموقع.
          */
-        $destination = "generated/article-images/v4-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
+        $destination = "generated/article-images/v5-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
 
         if (! Storage::disk('public')->exists($destination)) {
             $this->generateArticleImage($article, $destination, true);
@@ -680,6 +680,14 @@ class SiteAssetController extends Controller
             return;
         }
 
+        if (function_exists('imagecropauto')) {
+            $croppedLogo = @imagecropauto($logo, IMG_CROP_TRANSPARENT);
+            if ($croppedLogo instanceof \GdImage) {
+                imagedestroy($logo);
+                $logo = $croppedLogo;
+            }
+        }
+
         $logoWidth = imagesx($logo);
         $logoHeight = imagesy($logo);
 
@@ -688,16 +696,26 @@ class SiteAssetController extends Controller
             return;
         }
 
-        $maxWidth = 240;
-        $maxHeight = 115;
+        $maxWidth = 270;
+        $maxHeight = 125;
         $scale = min($maxWidth / $logoWidth, $maxHeight / $logoHeight);
         $targetWidth = max(1, (int) round($logoWidth * $scale));
         $targetHeight = max(1, (int) round($logoHeight * $scale));
-        $padding = 28;
-        $targetX = max(0, $canvasWidth - $targetWidth - $padding);
-        $targetY = max(0, $canvasHeight - $targetHeight - $padding);
+        $outerPadding = 34;
+        $innerPadding = 14;
+        $targetX = max($innerPadding, $canvasWidth - $targetWidth - $outerPadding);
+        $targetY = max($innerPadding, $canvasHeight - $targetHeight - $outerPadding);
 
         imagealphablending($canvas, true);
+        $backdrop = imagecolorallocatealpha($canvas, 0, 0, 0, 58);
+        imagefilledrectangle(
+            $canvas,
+            max(0, $targetX - $innerPadding),
+            max(0, $targetY - $innerPadding),
+            min($canvasWidth - 1, $targetX + $targetWidth + $innerPadding),
+            min($canvasHeight - 1, $targetY + $targetHeight + $innerPadding),
+            $backdrop
+        );
         imagecopyresampled(
             $canvas,
             $logo,
