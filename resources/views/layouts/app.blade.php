@@ -1213,6 +1213,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll(selectors.join(',')).forEach((img)=>{
     if (img.closest('.site-brand,.footer-brand-name,.header-ads,.footer-ads-ticker,.ad-media-shell,.site-ad-unit')) return;
     if (img.closest('.article-image-with-logo')) return;
+    if ((img.currentSrc || img.src || '').includes('/article-media/')) return;
 
     const install=()=>{
       if ((img.naturalWidth && img.naturalWidth < 220) || (img.naturalHeight && img.naturalHeight < 140)) return;
