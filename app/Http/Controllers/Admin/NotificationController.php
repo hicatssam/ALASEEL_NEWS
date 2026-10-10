@@ -46,6 +46,7 @@ class NotificationController extends Controller
                 'title'      => $notification->title,
                 'message'    => $notification->message,
                 'type'       => $notification->type,
+                'action_url' => $notification->action_url,
                 'created_at' => $notification->created_at
                     ?->diffForHumans(),
             ];
