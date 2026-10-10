@@ -587,58 +587,7 @@
                 </div>
 
                 <div class="card-body">
-                    <div style="display:flex;flex-wrap:wrap;gap:6px">
-                        @forelse ($tags as $tag)
-                            <label class="tag-option">
-                                <input
-                                    type="checkbox"
-                                    name="tags[]"
-                                    value="{{ $tag->id }}"
-                                    @checked(
-                                        in_array(
-                                            (string) $tag->id,
-                                            $selectedTags,
-                                            true
-                                        )
-                                    )
-                                >
-                                {{ $tag->name }}
-                            </label>
-                        @empty
-                            <span style="font-size:13px;color:#888">
-                                لا توجد وسوم متاحة.
-                            </span>
-                        @endforelse
-                    </div>
-
-                    <div style="margin-top:14px">
-                        <label for="new-tags" class="form-label">
-                            إضافة وسوم جديدة
-                        </label>
-                        <input
-                            type="text"
-                            id="new-tags"
-                            name="new_tags"
-                            class="form-control @error('new_tags') is-invalid @enderror"
-                            value="{{ old('new_tags') }}"
-                            placeholder="مثال: تحقيقات خاصة، غزة، اقتصاد رقمي"
-                        >
-                        <small style="display:block;margin-top:6px;color:#888;line-height:1.6">
-                            اكتب وسمًا واحدًا أو عدة وسوم وافصل بينها بفاصلة، وسيتم إنشاؤها وربطها بالمحتوى تلقائيًا.
-                        </small>
-                    </div>
-
-                    @error('new_tags')
-                        <small class="field-error">{{ $message }}</small>
-                    @enderror
-
-                    @error('tags')
-                        <small class="field-error">{{ $message }}</small>
-                    @enderror
-
-                    @error('tags.*')
-                        <small class="field-error">{{ $message }}</small>
-                    @enderror
+                    @include('admin.articles.partials.tag-selector')
                 </div>
             </div>
 
