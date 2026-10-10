@@ -79,12 +79,14 @@
                     </div>
                     <div id="content-owner-fields" style="display:none;padding:14px;margin-bottom:16px;border:1px solid #ead79d;border-radius:10px;background:#fffdf6">
                         <div class="form-group">
-                            <label class="form-label">اسم صاحب القصة / الرأي</label>
-                            <input type="text" name="content_owner_name" value="{{ old('content_owner_name') }}" maxlength="255" class="form-control">
+                            <label class="form-label">اسم كاتب المقال / صاحب الرأي / كاتب القصة <span style="color:#e74c3c">*</span></label>
+                            <input type="text" name="content_owner_name" value="{{ old('content_owner_name') }}" maxlength="255" class="form-control @error('content_owner_name') is-invalid @enderror">
+                            @error('content_owner_name')<small class="field-error">{{ $message }}</small>@enderror
                         </div>
                         <div class="form-group" style="margin-bottom:0">
                             <label class="form-label">صورته (اختياري)</label>
-                            <input type="file" name="content_owner_photo_file" accept="image/jpeg,image/png,image/webp" class="form-control">
+                            <input type="file" name="content_owner_photo_file" accept="image/jpeg,image/png,image/webp" class="form-control @error('content_owner_photo_file') is-invalid @enderror">
+                            @error('content_owner_photo_file')<small class="field-error">{{ $message }}</small>@enderror
                         </div>
                     </div>
                     <div class="form-group">
@@ -1588,7 +1590,7 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded', function () {
     const type = document.querySelector('[name="content_type"]');
     const fields = document.getElementById('content-owner-fields');
-    const sync = () => fields.style.display = ['story', 'opinion'].includes(type.value) ? 'block' : 'none';
+    const sync = () => fields.style.display = ['story', 'opinion', 'article'].includes(type.value) ? 'block' : 'none';
     type.addEventListener('change', sync); sync();
 });
 </script>
