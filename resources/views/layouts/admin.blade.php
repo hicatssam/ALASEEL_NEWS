@@ -362,6 +362,7 @@ html[dir="ltr"] .sidebar-close{right:10px}
 
     <div class="nav-section">{{ __('admin.section_content') }}</div>
 
+    @if(auth()->user()->hasAnyPermission(['manage-articles','manage-stories','manage-reports','manage-opinions']))
     {{-- جميع الأنواع تُدار من صفحة واحدة ونموذج إضافة واحد --}}
     <a href="{{ route('admin.articles.index') }}" class="nav-item {{ request()->routeIs('admin.articles.index','admin.articles.edit','admin.articles.show') ? 'active' : '' }}">
       <i class="fa-solid fa-layer-group"></i> إدارة المحتوى
@@ -369,35 +370,36 @@ html[dir="ltr"] .sidebar-close{right:10px}
     <a href="{{ route('admin.articles.create') }}" class="nav-item {{ request()->routeIs('admin.articles.create') ? 'active' : '' }}">
       <i class="fa-solid fa-square-plus"></i> إضافة محتوى
     </a>
+    @endif
 
-    @if($isSuperAdmin || $isEditor)
+    @if(auth()->user()->hasPermission('manage-breaking-alerts'))
     <a href="{{ route('admin.breaking-alerts.index') }}" class="nav-item {{ request()->routeIs('admin.breaking-alerts.*') ? 'active' : '' }}">
       <i class="fa-solid fa-bolt"></i> الأخبار العاجلة
     </a>
     @endif
 
     {{-- Categories: super-admin & editor only --}}
-    @if($isSuperAdmin || $isEditor)
+    @if(auth()->user()->hasPermission('manage-categories'))
     <a href="{{ route('admin.categories.index') }}" class="nav-item {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
       <i class="fa-solid fa-folder-tree"></i> {{ __('admin.nav_categories') }}
     </a>
     @endif
 
     {{-- Tags: super-admin & editor only --}}
-    @if($isSuperAdmin || $isEditor)
+    @if(auth()->user()->hasPermission('manage-tags'))
     <a href="{{ route('admin.tags.index') }}" class="nav-item {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">
       <i class="fa-solid fa-tags"></i> {{ __('admin.nav_tags') }}
     </a>
     @endif
 
     {{-- Journalists management: super-admin & editor only --}}
-    @if($isSuperAdmin || $isEditor)
+    @if(auth()->user()->hasPermission('manage-journalists'))
     <a href="{{ route('admin.journalists.index') }}" class="nav-item {{ request()->routeIs('admin.journalists.*') ? 'active' : '' }}">
       <i class="fa-solid fa-user-tie"></i> {{ __('admin.nav_journalists') }}
     </a>
     @endif
 
-    @if($isSuperAdmin || $isEditor)
+    @if(auth()->user()->hasPermission('manage-about'))
 
 <a
     href="{{ route('admin.about.edit') }}"
@@ -417,52 +419,61 @@ html[dir="ltr"] .sidebar-close{right:10px}
 
 @endif
    
-    {{-- Videos: all roles --}}
+    @if(auth()->user()->hasPermission('manage-videos'))
     <a href="{{ route('admin.videos.index') }}" class="nav-item {{ request()->routeIs('admin.videos.*') ? 'active' : '' }}">
       <i class="fa-solid fa-video"></i> {{ __('admin.nav_videos') }}
     </a>
+    @endif
 
     {{-- Live stream: super-admin & editor only --}}
-    @if($isSuperAdmin || $isEditor)
+    @if(auth()->user()->hasPermission('manage-live-streams'))
     <a href="{{ route('admin.live-streams.index') }}" class="nav-item {{ request()->routeIs('admin.live-streams.*') ? 'active' : '' }}">
       <i class="fa-solid fa-tower-broadcast"></i> {{ __('admin.nav_live_stream') }}
     </a>
     @endif
 
-    {{-- Media library: all roles --}}
+    @if(auth()->user()->hasPermission('manage-media'))
     <a href="{{ route('admin.media.index') }}" class="nav-item {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">
       <i class="fa-solid fa-photo-film"></i> {{ __('admin.nav_media') }}
     </a>
+    @endif
 
     {{-- Engagement section: super-admin & editor only --}}
-    @if($isSuperAdmin || $isEditor)
+    @if(auth()->user()->hasAnyPermission(['manage-comments','manage-contact','manage-newsletter']))
     <div class="nav-section">{{ __('admin.section_engagement') }}</div>
+    @if(auth()->user()->hasPermission('manage-comments'))
     <a href="{{ route('admin.comments.index') }}" class="nav-item {{ request()->routeIs('admin.comments.*') ? 'active' : '' }}">
       <i class="fa-solid fa-comments"></i> {{ __('admin.nav_comments') }}
     </a>
+    @endif
+    @if(auth()->user()->hasPermission('manage-contact'))
     <a href="{{ route('admin.contact.index') }}" class="nav-item {{ request()->routeIs('admin.contact.*') ? 'active' : '' }}">
       <i class="fa-solid fa-envelope"></i> {{ __('admin.nav_contact_messages') }}
     </a>
+    @endif
+    @if(auth()->user()->hasPermission('manage-newsletter'))
     <a href="{{ route('admin.newsletter.index') }}" class="nav-item {{ request()->routeIs('admin.newsletter.*') ? 'active' : '' }}">
       <i class="fa-solid fa-bell"></i> {{ __('admin.nav_newsletter') }}
     </a>
     @endif
+    @endif
 
     {{-- Marketing section: super-admin only (ads) --}}
-    @if($isSuperAdmin)
+    @if(auth()->user()->hasPermission('manage-ads'))
     <div class="nav-section">{{ __('admin.section_marketing') }}</div>
     <a href="{{ route('admin.advertisements.index') }}" class="nav-item {{ request()->routeIs('admin.advertisements.*') ? 'active' : '' }}">
       <i class="fa-solid fa-rectangle-ad"></i> {{ __('admin.nav_advertisements') }}
     </a>
     @endif
 
-    {{-- Notifications: all roles --}}
+    @if(auth()->user()->hasPermission('manage-notifications'))
     <a href="{{ route('admin.notifications.index') }}" class="nav-item {{ request()->routeIs('admin.notifications.*') ? 'active' : '' }}">
       <i class="fa-solid fa-bell"></i> {{ __('admin.notif_title') }}
       @if($adminUnreadCount > 0)
       <span class="badge-count">{{ $adminUnreadCount }}</span>
       @endif
     </a>
+    @endif
 
     @if(auth()->user()->hasPermission('manage-roles'))
     <div class="nav-section">إدارة الوصول</div>
@@ -472,17 +483,23 @@ html[dir="ltr"] .sidebar-close{right:10px}
     @endif
 
     {{-- Administration section: super-admin only --}}
-    @if($isSuperAdmin)
+    @if(auth()->user()->hasAnyPermission(['manage-users','view-activity-logs','manage-settings']))
     <div class="nav-section">{{ __('admin.section_admin') }}</div>
+    @if(auth()->user()->hasPermission('manage-users'))
     <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
       <i class="fa-solid fa-users"></i> {{ __('admin.nav_users') }}
     </a>
+    @endif
+    @if(auth()->user()->hasPermission('view-activity-logs'))
     <a href="{{ route('admin.activity-logs.index') }}" class="nav-item {{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }}">
       <i class="fa-solid fa-clock-rotate-left"></i> {{ __('admin.nav_activity_logs') }}
     </a>
+    @endif
+    @if(auth()->user()->hasPermission('manage-settings'))
     <a href="{{ route('admin.settings.index') }}" class="nav-item {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
       <i class="fa-solid fa-gears"></i> {{ __('admin.nav_settings') }}
     </a>
+    @endif
     @endif
   </nav>
 </aside>
@@ -509,13 +526,16 @@ html[dir="ltr"] .sidebar-close{right:10px}
       <a href="{{ route('language.switch','en') }}" class="{{ $locale==='en'?'active':'' }}">EN</a>
       <a href="{{ route('language.switch','fr') }}" class="{{ $locale==='fr'?'active':'' }}">FR</a>
     </div>
+    @if(auth()->user()->hasAnyPermission(['manage-articles','manage-stories','manage-reports','manage-opinions']))
     <a href="{{ route('admin.articles.create') }}" class="btn btn-primary btn-sm">
       <i class="fa-solid fa-plus"></i> <span class="btn-label">إضافة محتوى</span>
     </a>
+    @endif
     <a href="{{ route('home') }}" target="_blank" class="header-btn" title="{{ __('admin.nav_view_site') }}">
       <i class="fa-solid fa-arrow-up-right-from-square"></i>
     </a>
 {{-- Notification bell --}}
+@if(auth()->user()->hasPermission('manage-notifications'))
 @php
     $typeIcon = [
         'article'    => 'fa-newspaper',
@@ -578,8 +598,10 @@ html[dir="ltr"] .sidebar-close{right:10px}
                 @php
                     $ni = $typeIcon[$notif->type] ?? 'fa-circle-info';
                     $nc = $typeColor[$notif->type] ?? '#888';
-                    $nu = $typeUrl[$notif->type]
-                        ?? route('admin.notifications.index');
+                    $nu = $notif->action_url ?: (
+                        $typeUrl[$notif->type]
+                        ?? route('admin.notifications.index')
+                    );
                 @endphp
 
                 <a
@@ -656,6 +678,7 @@ html[dir="ltr"] .sidebar-close{right:10px}
         title="كتم صوت الإشعارات" aria-label="تشغيل أو كتم صوت الإشعارات">
     <i class="fa-solid fa-volume-high" id="notificationSoundIcon"></i>
 </button>
+@endif
 
 {{-- User profile dropdown --}}
 @php
@@ -751,6 +774,7 @@ function closeSidebar() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeNotif(); } });
 
 
+const canManageNotifications = @json(auth()->user()->hasPermission('manage-notifications'));
 const notifBtn = document.getElementById('notifBtn');
 const notifBadge = document.getElementById('notifBadge');
 const notificationList = document.getElementById('notificationList');
@@ -969,7 +993,8 @@ function createNotificationElement(notification) {
 
     const item = document.createElement('a');
 
-    item.href = config.url;
+    const targetUrl = notification.action_url || config.url;
+    item.href = targetUrl;
     item.className = 'notif-item unread';
     item.dataset.notificationId = notification.id;
 
@@ -1002,7 +1027,7 @@ function createNotificationElement(notification) {
     `;
 
     item.addEventListener('click', function (event) {
-        markRead(event, notification.id, config.url);
+        markRead(event, notification.id, targetUrl);
     });
 
     return item;
@@ -1064,7 +1089,7 @@ async function markRead(event, id, url) {
 }
 
 async function checkNewNotifications() {
-    if (notificationChecking || document.hidden) {
+    if (!canManageNotifications || notificationChecking || document.hidden) {
         return;
     }
 
@@ -1148,8 +1173,10 @@ updateSoundIcon();
 /*
  * فحص مباشر عند تحميل الصفحة، ثم كل 5 ثوانٍ.
  */
-checkNewNotifications();
-window.setInterval(checkNewNotifications, 5000);
+if (canManageNotifications) {
+    checkNewNotifications();
+    window.setInterval(checkNewNotifications, 5000);
+}
 
 
 </script>
