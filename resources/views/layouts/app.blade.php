@@ -920,7 +920,7 @@ html[dir="ltr"] .article-logo-watermark{right:auto!important;left:14px!important
 @if(
   isset($globalSidebarAds) &&
   $globalSidebarAds->isNotEmpty() &&
-  !request()->routeIs('home', 'articles.show', 'categories.show')
+  !request()->routeIs('home', 'articles.show', 'categories.show', 'videos.show')
 )
 <section class="global-page-ads" aria-label="إعلانات">
   @foreach($globalSidebarAds as $ad)

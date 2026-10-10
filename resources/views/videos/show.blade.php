@@ -36,6 +36,13 @@
       @endif
     </div>
     <aside>
+      @if(isset($globalSidebarAds) && $globalSidebarAds->isNotEmpty())
+      <div class="article-sidebar-ads" aria-label="إعلانات" style="margin-bottom:18px">
+        @foreach($globalSidebarAds as $ad)
+          @include('partials.ad-unit', ['ad' => $ad, 'class' => 'article-sidebar-ad'])
+        @endforeach
+      </div>
+      @endif
       <div class="sidebar-widget">
         <div class="widget-header"><span class="widget-title"><i class="fa-solid fa-video"></i> {{ __('messages.section_other_videos') }}</span></div>
         <div class="widget-body">

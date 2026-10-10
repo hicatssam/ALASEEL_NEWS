@@ -269,8 +269,8 @@
   .home-ad > a { display: block; width: 100%; height: 100%; color: inherit; }
   .home-ad-media-shell { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; background: var(--surface2); }
   .home-ad-media-backdrop { position: absolute; z-index: 0; inset: -16px; width: calc(100% + 32px); height: calc(100% + 32px); object-fit: cover; filter: blur(18px) brightness(.48) saturate(1.15); transform: scale(1.08); opacity: .9; }
-  .home-ad-media { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; background: transparent; padding: 0; }
-  video.home-ad-media { object-fit: cover; padding: 0; }
+  .home-ad-media { position: relative; z-index: 1; display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; background: transparent; padding: 0; }
+  video.home-ad-media { object-fit: contain; padding: 0; }
   .home-ad-control {
     position: absolute;
     top: 50%;
@@ -329,7 +329,7 @@
 
   .sidebar-ad { position: relative; overflow: hidden; border-radius: 13px; border: 1px solid var(--border); background: var(--surface2); box-shadow: 0 10px 28px rgba(0,0,0,.14); }
   .sidebar-ad > a { display: block; color: inherit; }
-  .sidebar-ad-media { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .sidebar-ad-media { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background:#050505; }
   .sidebar-ad .home-ad-fallback { min-height: 150px; }
 
 

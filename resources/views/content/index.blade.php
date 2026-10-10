@@ -10,12 +10,8 @@
     <div class="{{ $showAuthorList ? 'author-content-list' : 'content-cards-grid' }}">
     @forelse($articles as $article)
         @php
-            $displayAuthorName = in_array($article->content_type, ['opinion', 'article'], true)
-                ? ($article->content_owner_name ?: $article->journalist?->name)
-                : $article->journalist?->name;
-            $displayAuthorPhoto = in_array($article->content_type, ['opinion', 'article'], true)
-                ? ($article->content_owner_photo_url ?: $article->journalist?->photo_url)
-                : $article->journalist?->photo_url;
+            $displayAuthorName = $article->display_author_name;
+            $displayAuthorPhoto = $article->display_author_photo_url;
         @endphp
 
         @if($showAuthorList)
@@ -43,7 +39,7 @@
                 <a class="article-card-img" href="{{ route('articles.show',$article->slug) }}">@include('partials.article-image', ['article' => $article])</a>
                 <div class="article-card-body"><span class="article-cat">{{ $article->content_type_label }}</span><h2 class="article-title"><a href="{{ route('articles.show',$article->slug) }}">{{ $article->title }}</a></h2>
                 @if($article->summary)<p style="color:var(--text-muted);font-size:13px;line-height:1.7">{{ Str::limit(strip_tags($article->summary),120) }}</p>@endif
-                <div class="article-meta">@if($article->journalist)<span><i class="fa-solid fa-user-pen"></i> {{ $article->journalist->name }}</span>@endif</div></div>
+                <div class="article-meta">@if($displayAuthorName)<span><i class="fa-solid fa-user-pen"></i> {{ $displayAuthorName }}</span>@endif</div></div>
             </article>
         @endif
     @empty

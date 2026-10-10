@@ -68,10 +68,10 @@
                                 </div>
 
                                 <div class="article-meta">
-                                    @if ($article->journalist)
+                                    @if ($article->display_author_name)
                                         <span>
                                             <i class="fa-solid fa-user-pen"></i>
-                                            {{ $article->journalist->name }}
+                                            {{ $article->display_author_name }}
                                         </span>
                                     @endif
 
