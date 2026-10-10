@@ -14,7 +14,7 @@
     $homeShareImage = isset($featuredArticles) && $featuredArticles->first()
         ? route('site.article-image', [
             'article' => $featuredArticles->first()->id,
-            'iv' => 3,
+            'iv' => 4,
             'v' => $featuredArticles->first()->updated_at?->timestamp ?? 1,
             'lv' => $siteSettings['_site_logo_version'] ?? 1,
         ])
