@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
-    protected $fillable = ['user_id','title','message','type','read_at'];
+    protected $fillable = ['user_id','title','message','type','action_url','read_at'];
 
     protected $casts = ['read_at' => 'datetime'];
 
