@@ -29,6 +29,7 @@ class ContactController extends Controller
             'title'   => 'رسالة تواصل جديدة من: ' . $msg->name,
             'message' => $msg->subject ? 'الموضوع: ' . $msg->subject : mb_substr($msg->message, 0, 80),
             'type'    => 'contact',
+            'action_url' => route('admin.contact.show', $msg, false),
         ]);
 
         return back()->with('success','تم إرسال رسالتك بنجاح. سنتواصل معك قريباً.');
