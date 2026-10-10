@@ -26,7 +26,7 @@ class SiteAssetController extends Controller
         /*
          * اسم الكاش يتغير عند تعديل المقال أو شعار الموقع.
          */
-        $destination = "generated/article-images/v3-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
+        $destination = "generated/article-images/v4-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
 
         if (! Storage::disk('public')->exists($destination)) {
             $this->generateArticleImage($article, $destination, true);
@@ -688,12 +688,12 @@ class SiteAssetController extends Controller
             return;
         }
 
-        $maxWidth = 180;
-        $maxHeight = 86;
-        $scale = min($maxWidth / $logoWidth, $maxHeight / $logoHeight, 1);
+        $maxWidth = 240;
+        $maxHeight = 115;
+        $scale = min($maxWidth / $logoWidth, $maxHeight / $logoHeight);
         $targetWidth = max(1, (int) round($logoWidth * $scale));
         $targetHeight = max(1, (int) round($logoHeight * $scale));
-        $padding = 24;
+        $padding = 28;
         $targetX = max(0, $canvasWidth - $targetWidth - $padding);
         $targetY = max(0, $canvasHeight - $targetHeight - $padding);
 
