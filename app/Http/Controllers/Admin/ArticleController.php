@@ -92,7 +92,7 @@ class ArticleController extends Controller
                 Rule::exists('journalists', 'id'),
             ],
 
-            'content_owner_name' => ['nullable', 'required_if:content_type,story,opinion', 'string', 'max:255'],
+            'content_owner_name' => ['nullable', 'required_if:content_type,story,opinion,article', 'string', 'max:255'],
             'content_owner_photo_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'remove_content_owner_photo' => ['nullable', 'boolean'],
             
@@ -292,7 +292,7 @@ class ArticleController extends Controller
             $selectedTagIds = $request->input('tags', []);
             $newTagNames = (string) $request->input('new_tags', '');
 
-            if (in_array($data['content_type'], ['story', 'opinion'], true)) {
+            if (in_array($data['content_type'], ['story', 'opinion', 'article'], true)) {
                 if ($request->hasFile('content_owner_photo_file')) {
                     $uploadedOwnerPhoto = $request->file('content_owner_photo_file')->store('media/content-owners', 'public');
                     $data['content_owner_photo'] = $uploadedOwnerPhoto;
@@ -573,7 +573,7 @@ public function show(Request $request, string $slug)
         $deleteOldOwnerPhotoAfterUpdate = false;
 
         try {
-            if (in_array($data['content_type'], ['story', 'opinion'], true)) {
+            if (in_array($data['content_type'], ['story', 'opinion', 'article'], true)) {
                 if ($request->hasFile('content_owner_photo_file')) {
                     $newUploadedOwnerPhoto = $request->file('content_owner_photo_file')->store('media/content-owners', 'public');
                     $data['content_owner_photo'] = $newUploadedOwnerPhoto;
