@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Article;
-use App\Models\ArticleView;
 use App\Models\ArticleRevision;
 use App\Models\Category;
 use App\Models\Journalist;
@@ -450,100 +449,15 @@ class ArticleController extends Controller
     |--------------------------------------------------------------------------
     */
 
-public function show(Request $request, string $slug)
-{
-    $article = Article::query()
-        ->with([
-            'category',
-            'journalist',
-            'tags',
-            'approvedComments',
-        ])
-        ->where('slug', $slug)
-        ->where('status', 'published')
-        ->where(function ($query) {
-            $query->whereNull('published_at')
-                ->orWhere('published_at', '<=', now());
-        })
-        ->firstOrFail();
+    public function show(Article $article)
+    {
+        $this->authorizeContentType($article->content_type);
+        $this->authorizeJournalistArticle($article);
 
-    $this->authorizeContentType($article->content_type);
-    $this->authorizeJournalistArticle($article);
+        $article->load(['category', 'journalist', 'tags', 'user']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | تسجيل مشاهدة واحدة لكل IP
-    |--------------------------------------------------------------------------
-    */
-    $ipHash = hash_hmac(
-        'sha256',
-        (string) $request->ip(),
-        (string) config('app.key')
-    );
-
-    DB::transaction(function () use ($article, $ipHash) {
-        $inserted = ArticleView::query()->insertOrIgnore([
-            'article_id' => $article->id,
-            'ip_hash'    => $ipHash,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        if ($inserted === 1) {
-            $article->increment('views');
-        }
-    });
-
-    // تحديث قيمة المشاهدات داخل الكائن بعد increment.
-    $article->refresh();
-
-    /*
-    |--------------------------------------------------------------------------
-    | الأخبار ذات الصلة
-    |--------------------------------------------------------------------------
-    */
-    $related = Article::query()
-        ->with(['category', 'journalist'])
-        ->where('id', '!=', $article->id)
-        ->where('status', 'published')
-        ->where(function ($query) {
-            $query->whereNull('published_at')
-                ->orWhere('published_at', '<=', now());
-        })
-        ->when(
-            $article->category_id,
-            fn ($query) => $query->where(
-                'category_id',
-                $article->category_id
-            )
-        )
-        ->latest('published_at')
-        ->take(4)
-        ->get();
-
-    /*
-    |--------------------------------------------------------------------------
-    | الأكثر قراءة
-    |--------------------------------------------------------------------------
-    */
-    $popular = Article::query()
-        ->with(['category', 'journalist'])
-        ->where('id', '!=', $article->id)
-        ->where('status', 'published')
-        ->where(function ($query) {
-            $query->whereNull('published_at')
-                ->orWhere('published_at', '<=', now());
-        })
-        ->orderByDesc('views')
-        ->take(6)
-        ->get();
-
-    return view('articles.show', compact(
-        'article',
-        'related',
-        'popular'
-    ));
-}
+        return view('admin.articles.show', compact('article'));
+    }
     /*
     |--------------------------------------------------------------------------
     | Edit
