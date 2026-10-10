@@ -191,6 +191,24 @@ class Article extends Model
         return static::contentTypes()[$this->content_type] ?? 'خبر';
     }
 
+    public function getDisplayAuthorNameAttribute(): ?string
+    {
+        if (in_array($this->content_type, ['article', 'story', 'opinion'], true)) {
+            return $this->content_owner_name ?: $this->journalist?->name;
+        }
+
+        return $this->journalist?->name;
+    }
+
+    public function getDisplayAuthorPhotoUrlAttribute(): ?string
+    {
+        if (in_array($this->content_type, ['article', 'story', 'opinion'], true)) {
+            return $this->content_owner_photo_url ?: $this->journalist?->photo_url;
+        }
+
+        return $this->journalist?->photo_url;
+    }
+
     public function scopeBreaking($query)
     {
         return $query->where('is_breaking', true)->where('status', 'published');
