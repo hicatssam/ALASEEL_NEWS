@@ -936,14 +936,14 @@
 
         .about-team-grid {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             align-items: stretch;
-            gap: 24px;
+            gap: 20px;
         }
 
 .about-team-card {
     width: 100%;
-    padding: 32px 20px 27px;
+    padding: 28px 16px 25px;
     border: 1px solid var(--about-border);
     border-radius: 8px;
     background: var(--about-white);
@@ -963,8 +963,9 @@
 
         .team-photo-wrapper {
             position: relative;
-            width: 180px;
-            height: 180px;
+            width: min(150px, 100%);
+            aspect-ratio: 1;
+            height: auto;
             margin: 0 auto 24px;
         }
 
@@ -987,8 +988,8 @@
         .team-photo {
             position: relative;
             display: block;
-            width: 180px;
-            height: 180px;
+            width: 100%;
+            height: 100%;
             border: 5px solid var(--about-white);
             border-radius: 50%;
             object-fit: cover;
@@ -1024,7 +1025,7 @@
             font-weight: 700;
         }
 
-        @media (max-width: 1100px) {
+        @media (max-width: 1200px) {
             .about-team-grid {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
             }
