@@ -3,7 +3,7 @@
 
     $articleImageUrl = route('site.article-image', [
         'article' => $article->id,
-        'iv' => 4,
+        'iv' => 6,
         'v' => $article->updated_at?->timestamp ?? 1,
     ]);
 
