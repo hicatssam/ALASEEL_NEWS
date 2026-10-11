@@ -26,7 +26,7 @@ class SiteAssetController extends Controller
         /*
          * اسم الكاش يتغير عند تعديل المقال أو شعار الموقع.
          */
-        $destination = "generated/article-images/v5-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
+        $destination = "generated/article-images/v6-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
 
         if (! Storage::disk('public')->exists($destination)) {
             $this->generateArticleImage($article, $destination, true);
@@ -680,8 +680,13 @@ class SiteAssetController extends Controller
             return;
         }
 
+        /*
+         * إزالة الفراغ الشفاف فقط، مع ترك هامش أمان صغير حول الشعار
+         * حتى لا تتآكل حوافه بعد التصغير.
+         */
         if (function_exists('imagecropauto')) {
             $croppedLogo = @imagecropauto($logo, IMG_CROP_TRANSPARENT);
+
             if ($croppedLogo instanceof \GdImage) {
                 imagedestroy($logo);
                 $logo = $croppedLogo;
@@ -693,29 +698,49 @@ class SiteAssetController extends Controller
 
         if ($logoWidth < 1 || $logoHeight < 1) {
             imagedestroy($logo);
+
             return;
         }
 
-        $maxWidth = 270;
-        $maxHeight = 125;
-        $scale = min($maxWidth / $logoWidth, $maxHeight / $logoHeight);
+        /*
+         * علامة مائية واضحة داخل حدود الصورة، في المنتصف السفلي.
+         * القياس نسبي حتى تبقى متناسقة مع أي مقاس مستقبلي.
+         */
+        $maxWidth = (int) round($canvasWidth * .24);
+        $maxHeight = (int) round($canvasHeight * .20);
+        $scale = min($maxWidth / $logoWidth, $maxHeight / $logoHeight, 1);
+
         $targetWidth = max(1, (int) round($logoWidth * $scale));
         $targetHeight = max(1, (int) round($logoHeight * $scale));
-        $outerPadding = 34;
-        $innerPadding = 14;
-        $targetX = max($innerPadding, $canvasWidth - $targetWidth - $outerPadding);
-        $targetY = max($innerPadding, $canvasHeight - $targetHeight - $outerPadding);
+        $safePadding = max(24, (int) round($canvasWidth * .03));
+
+        $targetX = (int) floor(($canvasWidth - $targetWidth) / 2);
+        $targetY = $canvasHeight - $targetHeight - $safePadding;
+
+        /*
+         * تخفيف الشعار إلى 72% ليظهر كعلامة مائية حقيقية،
+         * مع الحفاظ على شفافية ملف PNG الأصلية.
+         */
+        imagealphablending($logo, false);
+        imagesavealpha($logo, true);
+
+        for ($y = 0; $y < $logoHeight; $y++) {
+            for ($x = 0; $x < $logoWidth; $x++) {
+                $rgba = imagecolorat($logo, $x, $y);
+                $alpha = ($rgba >> 24) & 0x7F;
+                $newAlpha = min(127, 127 - (int) round((127 - $alpha) * .72));
+                $color = imagecolorallocatealpha(
+                    $logo,
+                    ($rgba >> 16) & 0xFF,
+                    ($rgba >> 8) & 0xFF,
+                    $rgba & 0xFF,
+                    $newAlpha
+                );
+                imagesetpixel($logo, $x, $y, $color);
+            }
+        }
 
         imagealphablending($canvas, true);
-        $backdrop = imagecolorallocatealpha($canvas, 0, 0, 0, 58);
-        imagefilledrectangle(
-            $canvas,
-            max(0, $targetX - $innerPadding),
-            max(0, $targetY - $innerPadding),
-            min($canvasWidth - 1, $targetX + $targetWidth + $innerPadding),
-            min($canvasHeight - 1, $targetY + $targetHeight + $innerPadding),
-            $backdrop
-        );
         imagecopyresampled(
             $canvas,
             $logo,
