@@ -26,7 +26,7 @@ class SiteAssetController extends Controller
         /*
          * اسم الكاش يتغير عند تعديل المقال أو شعار الموقع.
          */
-        $destination = "generated/article-images/v6-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
+        $destination = "generated/article-images/v7-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
 
         if (! Storage::disk('public')->exists($destination)) {
             $this->generateArticleImage($article, $destination, true);
@@ -706,8 +706,8 @@ class SiteAssetController extends Controller
          * علامة مائية واضحة داخل حدود الصورة، في المنتصف السفلي.
          * القياس نسبي حتى تبقى متناسقة مع أي مقاس مستقبلي.
          */
-        $maxWidth = (int) round($canvasWidth * .24);
-        $maxHeight = (int) round($canvasHeight * .20);
+        $maxWidth = (int) round($canvasWidth * .68);
+        $maxHeight = (int) round($canvasHeight * .55);
         $scale = min($maxWidth / $logoWidth, $maxHeight / $logoHeight, 1);
 
         $targetWidth = max(1, (int) round($logoWidth * $scale));
@@ -715,10 +715,10 @@ class SiteAssetController extends Controller
         $safePadding = max(24, (int) round($canvasWidth * .03));
 
         $targetX = (int) floor(($canvasWidth - $targetWidth) / 2);
-        $targetY = $canvasHeight - $targetHeight - $safePadding;
+        $targetY = (int) floor(($canvasHeight - $targetHeight) / 2);
 
         /*
-         * تخفيف الشعار إلى 72% ليظهر كعلامة مائية حقيقية،
+         * تخفيف الشعار إلى 16% ليغطي مساحة كبيرة كعلامة حماية،
          * مع الحفاظ على شفافية ملف PNG الأصلية.
          */
         imagealphablending($logo, false);
@@ -728,7 +728,7 @@ class SiteAssetController extends Controller
             for ($x = 0; $x < $logoWidth; $x++) {
                 $rgba = imagecolorat($logo, $x, $y);
                 $alpha = ($rgba >> 24) & 0x7F;
-                $newAlpha = min(127, 127 - (int) round((127 - $alpha) * .72));
+                $newAlpha = min(127, 127 - (int) round((127 - $alpha) * .16));
                 $color = imagecolorallocatealpha(
                     $logo,
                     ($rgba >> 16) & 0xFF,
