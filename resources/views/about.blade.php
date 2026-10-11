@@ -1133,7 +1133,8 @@
         .about-team.has-spider-team::before {
             content: '';
             position: absolute;
-            inset: 9% 50%;
+            top: 9%;
+            left: 50%;
             width: min(980px, 94vw);
             aspect-ratio: 1;
             transform: translateX(-50%);
