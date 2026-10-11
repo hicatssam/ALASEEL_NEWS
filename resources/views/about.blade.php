@@ -432,7 +432,7 @@
         @endif
 
         @if ($members->isNotEmpty())
-            <section class="about-team" aria-labelledby="team-section-title">
+            <section class="about-team {{ $members->count() === 5 ? 'has-spider-team' : '' }}" aria-labelledby="team-section-title">
                 <div class="about-container">
                     <header class="about-team-header">
                         <span class="about-section-label">
@@ -1118,6 +1118,85 @@
             color: var(--about-primary-dark);
             font-size: 0.92rem;
             font-weight: 700;
+        }
+
+        .about-team.has-spider-team {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 50% 46%, rgba(182, 139, 60, .12), transparent 38%),
+                radial-gradient(circle, rgba(208, 165, 81, .18) 1px, transparent 1.5px),
+                linear-gradient(145deg, #050505 0%, #0d0b07 48%, #050505 100%);
+            background-size: auto, 38px 38px, auto;
+        }
+
+        .about-team.has-spider-team::before {
+            content: '';
+            position: absolute;
+            top: 9%;
+            left: 50%;
+            width: min(980px, 94vw);
+            aspect-ratio: 1;
+            transform: translateX(-50%);
+            border: 1px solid rgba(205, 160, 74, .22);
+            border-radius: 50%;
+            background:
+                radial-gradient(ellipse 50% 18% at center, transparent 97%, rgba(205, 160, 74, .25) 98%, transparent 100%),
+                radial-gradient(ellipse 26% 50% at center, transparent 97%, rgba(205, 160, 74, .22) 98%, transparent 100%),
+                radial-gradient(circle at center, transparent 47%, rgba(205, 160, 74, .16) 47.3%, transparent 47.7%);
+            box-shadow:
+                0 0 90px rgba(182, 139, 60, .12),
+                inset 0 0 80px rgba(182, 139, 60, .06);
+            pointer-events: none;
+        }
+
+        .about-team.has-spider-team .about-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .about-team.has-spider-team .about-team-header h2,
+        .about-team.has-spider-team .about-team-header p {
+            color: var(--about-white);
+        }
+
+        .about-team.has-spider-team .about-team-header p {
+            color: rgba(255, 255, 255, .67);
+        }
+
+        .about-team.has-spider-team .about-team-grid.is-spider-layout {
+            background:
+                linear-gradient(45deg, transparent calc(50% - .5px), rgba(205, 160, 74, .3) 50%, transparent calc(50% + .5px)),
+                linear-gradient(-45deg, transparent calc(50% - .5px), rgba(205, 160, 74, .3) 50%, transparent calc(50% + .5px)),
+                radial-gradient(circle at center, transparent 0 20%, rgba(205, 160, 74, .25) 20.2%, transparent 20.5% 34%, rgba(205, 160, 74, .18) 34.2%, transparent 34.5%);
+        }
+
+        .about-team.has-spider-team .about-team-card {
+            border-color: rgba(205, 160, 74, .58);
+            background: rgba(12, 11, 9, .91);
+            box-shadow:
+                0 20px 55px rgba(0, 0, 0, .42),
+                inset 0 1px 0 rgba(255, 255, 255, .04);
+            backdrop-filter: blur(8px);
+        }
+
+        .about-team.has-spider-team .about-team-card:hover {
+            border-color: #d4a94f;
+            box-shadow:
+                0 24px 65px rgba(0, 0, 0, .52),
+                0 0 28px rgba(205, 160, 74, .2);
+        }
+
+        .about-team.has-spider-team .team-photo {
+            border-color: #11100d;
+        }
+
+        .about-team.has-spider-team .team-card-content h3 {
+            color: var(--about-white);
+        }
+
+        .about-team.has-spider-team .team-card-content p {
+            color: #d4a94f;
         }
 
         @media (max-width: 1200px) {
