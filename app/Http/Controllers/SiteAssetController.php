@@ -26,7 +26,7 @@ class SiteAssetController extends Controller
         /*
          * اسم الكاش يتغير عند تعديل المقال أو شعار الموقع.
          */
-        $destination = "generated/article-images/v7-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
+        $destination = "generated/article-images/v8-{$article->id}-{$articleVersion}-{$logoVersion}.jpg";
 
         if (! Storage::disk('public')->exists($destination)) {
             $this->generateArticleImage($article, $destination, true);
@@ -706,8 +706,8 @@ class SiteAssetController extends Controller
          * علامة مائية واضحة داخل حدود الصورة، في المنتصف السفلي.
          * القياس نسبي حتى تبقى متناسقة مع أي مقاس مستقبلي.
          */
-        $maxWidth = (int) round($canvasWidth * .68);
-        $maxHeight = (int) round($canvasHeight * .55);
+        $maxWidth = (int) round($canvasWidth * .94);
+        $maxHeight = (int) round($canvasHeight * .88);
         $scale = min($maxWidth / $logoWidth, $maxHeight / $logoHeight, 1);
 
         $targetWidth = max(1, (int) round($logoWidth * $scale));
@@ -718,7 +718,7 @@ class SiteAssetController extends Controller
         $targetY = (int) floor(($canvasHeight - $targetHeight) / 2);
 
         /*
-         * تخفيف الشعار إلى 16% ليغطي مساحة كبيرة كعلامة حماية،
+         * تخفيف الشعار إلى 10% مع تغطيته لمعظم مساحة الصورة،
          * مع الحفاظ على شفافية ملف PNG الأصلية.
          */
         imagealphablending($logo, false);
@@ -728,7 +728,7 @@ class SiteAssetController extends Controller
             for ($x = 0; $x < $logoWidth; $x++) {
                 $rgba = imagecolorat($logo, $x, $y);
                 $alpha = ($rgba >> 24) & 0x7F;
-                $newAlpha = min(127, 127 - (int) round((127 - $alpha) * .16));
+                $newAlpha = min(127, 127 - (int) round((127 - $alpha) * .10));
                 $color = imagecolorallocatealpha(
                     $logo,
                     ($rgba >> 16) & 0xFF,
