@@ -454,7 +454,7 @@
                         </p>
                     </header>
 
-                    <div class="about-team-grid">
+                    <div class="about-team-grid {{ $members->count() === 5 ? 'is-spider-layout' : '' }}">
                         @foreach ($members as $member)
                             @php
                                 $memberName = $localizedValue(
@@ -955,6 +955,102 @@
         border-color 0.25s ease;
 }
 
+        .about-team-grid.is-spider-layout {
+            position: relative;
+            grid-template-columns: repeat(3, 240px);
+            grid-template-rows: repeat(3, 230px);
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px 70px;
+            min-height: 726px;
+            isolation: isolate;
+        }
+
+        .about-team-grid.is-spider-layout::before,
+        .about-team-grid.is-spider-layout::after {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            pointer-events: none;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(182, 139, 60, .62) 14%,
+                rgba(182, 139, 60, .62) 86%,
+                transparent
+            );
+            box-shadow: 0 0 18px rgba(182, 139, 60, .16);
+        }
+
+        .about-team-grid.is-spider-layout::before {
+            top: 50%;
+            right: 9%;
+            left: 9%;
+            height: 1px;
+        }
+
+        .about-team-grid.is-spider-layout::after {
+            top: 7%;
+            bottom: 7%;
+            left: 50%;
+            width: 1px;
+            background: linear-gradient(
+                180deg,
+                transparent,
+                rgba(182, 139, 60, .62) 14%,
+                rgba(182, 139, 60, .62) 86%,
+                transparent
+            );
+        }
+
+        .about-team-grid.is-spider-layout .about-team-card {
+            position: relative;
+            z-index: 1;
+            align-self: center;
+            justify-self: center;
+            max-width: 240px;
+            padding: 20px 14px;
+        }
+
+        .about-team-grid.is-spider-layout .about-team-card:nth-child(1) {
+            grid-column: 2;
+            grid-row: 2;
+            border-color: var(--about-primary);
+            box-shadow:
+                0 18px 48px rgba(32, 27, 19, .15),
+                0 0 0 10px rgba(182, 139, 60, .08);
+            transform: scale(1.07);
+        }
+
+        .about-team-grid.is-spider-layout .about-team-card:nth-child(2) {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .about-team-grid.is-spider-layout .about-team-card:nth-child(3) {
+            grid-column: 3;
+            grid-row: 2;
+        }
+
+        .about-team-grid.is-spider-layout .about-team-card:nth-child(4) {
+            grid-column: 2;
+            grid-row: 3;
+        }
+
+        .about-team-grid.is-spider-layout .about-team-card:nth-child(5) {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .about-team-grid.is-spider-layout .team-photo-wrapper {
+            width: 118px;
+            margin-bottom: 17px;
+        }
+
+        .about-team-grid.is-spider-layout .about-team-card:nth-child(1) .team-photo-wrapper {
+            width: 132px;
+        }
+
         .about-team-card:hover {
             border-color: rgba(182, 139, 60, 0.55);
             box-shadow: 0 20px 45px rgba(32, 27, 19, 0.12);
@@ -1026,8 +1122,32 @@
         }
 
         @media (max-width: 1200px) {
-            .about-team-grid {
+            .about-team-grid,
+            .about-team-grid.is-spider-layout {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
+                grid-template-rows: none;
+                min-height: 0;
+                gap: 20px;
+            }
+
+            .about-team-grid.is-spider-layout::before,
+            .about-team-grid.is-spider-layout::after {
+                display: none;
+            }
+
+            .about-team-grid.is-spider-layout .about-team-card,
+            .about-team-grid.is-spider-layout .about-team-card:nth-child(n) {
+                grid-column: auto;
+                grid-row: auto;
+                max-width: none;
+                padding: 28px 16px 25px;
+                transform: none;
+            }
+
+            .about-team-grid.is-spider-layout .team-photo-wrapper,
+            .about-team-grid.is-spider-layout .about-team-card:nth-child(1) .team-photo-wrapper {
+                width: min(150px, 100%);
+                margin-bottom: 24px;
             }
         }
 
