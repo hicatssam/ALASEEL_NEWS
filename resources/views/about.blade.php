@@ -958,11 +958,11 @@
         .about-team-grid.is-spider-layout {
             position: relative;
             grid-template-columns: repeat(3, 240px);
-            grid-template-rows: repeat(3, 230px);
+            grid-template-rows: repeat(3, 340px);
             justify-content: space-between;
             align-items: center;
-            gap: 18px 70px;
-            min-height: 726px;
+            gap: 36px 70px;
+            min-height: 1092px;
             isolation: isolate;
         }
 
@@ -1019,7 +1019,6 @@
             box-shadow:
                 0 18px 48px rgba(32, 27, 19, .15),
                 0 0 0 10px rgba(182, 139, 60, .08);
-            transform: scale(1.07);
         }
 
         .about-team-grid.is-spider-layout .about-team-card:nth-child(2) {
